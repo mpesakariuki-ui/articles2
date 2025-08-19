@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Sparkles } from 'lucide-react';
+import { Code, Image as ImageIcon, Sparkles, Video } from 'lucide-react';
 import { improveWritingStyle } from '@/ai/flows/improve-writing-style';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function PostEditor() {
   const [content, setContent] = useState('');
@@ -48,6 +49,32 @@ export function PostEditor() {
               <Label htmlFor="title">Title</Label>
               <Input id="title" placeholder="Enter a compelling title" className="text-lg" />
             </div>
+
+            <Tabs defaultValue="image" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="image"><ImageIcon className="mr-2 h-4 w-4" /> Thumbnail</TabsTrigger>
+                <TabsTrigger value="video"><Video className="mr-2 h-4 w-4" /> Video</TabsTrigger>
+                <TabsTrigger value="code"><Code className="mr-2 h-4 w-4" /> Code</TabsTrigger>
+              </TabsList>
+              <TabsContent value="image">
+                <div className="space-y-2">
+                  <Label htmlFor="thumb-image">Upload Thumbnail Image</Label>
+                  <Input id="thumb-image" type="file" />
+                </div>
+              </TabsContent>
+              <TabsContent value="video">
+                <div className="space-y-2">
+                  <Label htmlFor="video-url">Video URL</Label>
+                  <Input id="video-url" placeholder="e.g., https://youtube.com/watch?v=..." />
+                </div>
+              </TabsContent>
+              <TabsContent value="code">
+                <div className="space-y-2">
+                  <Label htmlFor="code-snippet">Code Snippet</Label>
+                  <Textarea id="code-snippet" placeholder="Paste your code here..." className="min-h-[200px] font-mono" />
+                </div>
+              </TabsContent>
+            </Tabs>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
