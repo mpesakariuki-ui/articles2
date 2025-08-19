@@ -30,9 +30,8 @@ export function PostCard({ post }: PostCardProps) {
           <Image
             src={post.coverImage}
             alt={post.title}
-            layout="fill"
-            objectFit="cover"
-            className="rounded-t-lg"
+            fill
+            className="rounded-t-lg object-cover"
             data-ai-hint="article illustration"
           />
         </div>

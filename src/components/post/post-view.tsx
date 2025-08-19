@@ -138,7 +138,7 @@ export function PostView({ post }: { post: Post }) {
             {post.lectures.map(lecture => (
               <Card key={lecture.id} className="group overflow-hidden">
                 <div className="relative aspect-video">
-                   <Image src={lecture.thumbnailUrl} alt={lecture.title} layout="fill" objectFit="cover" data-ai-hint="video thumbnail" />
+                   <Image src={lecture.thumbnailUrl} alt={lecture.title} fill className="object-cover" data-ai-hint="video thumbnail" />
                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                      <Clapperboard className="h-12 w-12 text-white" />
                    </div>
