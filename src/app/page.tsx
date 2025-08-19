@@ -5,13 +5,6 @@ import { Button } from '@/components/ui/button';
 import { PostCard } from '@/components/post/post-card';
 import { posts } from '@/lib/data';
 import type { Post } from '@/lib/types';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
 import * as React from 'react';
 
 export default function Home() {
@@ -36,25 +29,11 @@ export default function Home() {
 
       <section id="featured-posts" className="py-16">
         <h2 className="font-headline text-4xl font-bold text-center mb-12">Featured Posts</h2>
-        <Carousel 
-            className="w-full"
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-          >
-          <CarouselContent>
-            {posts.map((post: Post) => (
-              <CarouselItem key={post.id} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-1">
-                  <PostCard post={post} />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post: Post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
       </section>
     </div>
   );
