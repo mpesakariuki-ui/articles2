@@ -21,6 +21,78 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from '@/components/ui/skeleton';
 
+// A simple function to render basic markdown
+const renderMarkdown = (content: string) => {
+  const lines = content.split('\n');
+  const elements = [];
+  let listType: 'ul' | 'ol' | null = null;
+  let listItems: JSX.Element[] = [];
+
+  const flushList = () => {
+    if (listItems.length > 0) {
+      if (listType === 'ul') {
+        elements.push(<ul key={`ul-${elements.length}`} className="list-disc pl-5 space-y-2">{listItems}</ul>);
+      } else if (listType === 'ol') {
+        elements.push(<ol key={`ol-${elements.length}`} className="list-decimal pl-5 space-y-2">{listItems}</ol>);
+      }
+      listItems = [];
+      listType = null;
+    }
+  };
+
+  lines.forEach((line, index) => {
+    line = line.trim();
+
+    // Check for list items
+    const isUl = line.startsWith('- ');
+    const isOl = /^\d+\.\s/.test(line);
+
+    if (!isUl && !isOl && listType) {
+      flushList();
+    }
+
+    if (line.startsWith('### ')) {
+      flushList();
+      elements.push(<h3 key={index} className="text-xl font-bold mt-4 mb-2">{line.substring(4)}</h3>);
+    } else if (line.startsWith('## ')) {
+      flushList();
+      elements.push(<h2 key={index} className="text-2xl font-bold mt-6 mb-3">{line.substring(3)}</h2>);
+    } else if (line.startsWith('# ')) {
+      flushList();
+      elements.push(<h1 key={index} className="text-3xl font-bold mt-8 mb-4">{line.substring(2)}</h1>);
+    } else if (line.startsWith('---')) {
+      flushList();
+      elements.push(<Separator key={index} className="my-6" />);
+    } else if (isUl) {
+      if (listType !== 'ul') {
+        flushList();
+        listType = 'ul';
+      }
+      listItems.push(<li key={index}>{line.substring(2)}</li>);
+    } else if (isOl) {
+      if (listType !== 'ol') {
+        flushList();
+        listType = 'ol';
+      }
+      listItems.push(<li key={index}>{line.replace(/^\d+\.\s/, '')}</li>);
+    } else if (line) {
+      flushList();
+      // Basic inline formatting
+      const formattedLine = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      elements.push(<p key={index} dangerouslySetInnerHTML={{ __html: formattedLine }} />);
+    } else {
+      // Keep empty lines for spacing between paragraphs
+      flushList();
+      elements.push(<div key={index} className="h-4" />);
+    }
+  });
+
+  flushList(); // Flush any remaining list items
+  return elements;
+};
+
 export function PostView({ post }: { post: Post }) {
   const [summary, setSummary] = useState('');
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
@@ -98,9 +170,7 @@ export function PostView({ post }: { post: Post }) {
       )}
 
       <div className="prose prose-lg dark:prose-invert max-w-none mx-auto leading-relaxed mb-12">
-        {post.content.split('\n').map((paragraph, index) => (
-          <p key={index}>{paragraph}</p>
-        ))}
+        {renderMarkdown(post.content)}
       </div>
 
       <div className="flex items-center space-x-2 mb-12">
