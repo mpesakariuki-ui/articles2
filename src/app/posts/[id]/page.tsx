@@ -3,6 +3,8 @@ import { PostView } from '@/components/post/post-view';
 import { notFound } from 'next/navigation';
 
 export async function generateStaticParams() {
+  // This function is for build time, new posts won't be included
+  // unless we re-build. In a real app, this would be dynamic.
   return posts.map((post) => ({
     id: post.id,
   }));

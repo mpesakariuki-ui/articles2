@@ -21,7 +21,7 @@ export const lectures: Lecture[] = [
   { id: 'lecture-2', title: 'The Philosophy of Science', type: 'slides', embedUrl: '#', thumbnailUrl: 'https://placehold.co/400x225.png' },
 ];
 
-export const posts: Post[] = [
+export let posts: Post[] = [
   {
     id: '1',
     title: 'The Symbiosis of Art and Science in the Renaissance',
@@ -73,3 +73,19 @@ For in its grip, nothing can last.`,
     lectures: [lectures[0]],
   },
 ];
+
+// Function to add a new post
+export function addPost(postData: Omit<Post, 'id' | 'author' | 'createdAt' | 'comments' | 'recommendedBooks' | 'lectures' | 'coverImage'>): Post {
+  const newPost: Post = {
+    id: String(posts.length + 1),
+    author: users[0], // Mocking the author as the first user
+    createdAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    comments: [],
+    recommendedBooks: [],
+    lectures: [],
+    coverImage: 'https://placehold.co/1200x630.png',
+    ...postData,
+  };
+  posts = [newPost, ...posts];
+  return newPost;
+}
