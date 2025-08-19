@@ -40,4 +40,5 @@ export interface Post {
   recommendedBooks: Book[];
   lectures: Lecture[];
   references?: string[];
+  views?: number;
 }

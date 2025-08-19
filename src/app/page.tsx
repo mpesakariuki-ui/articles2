@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PostCard } from '@/components/post/post-card';
-import { SearchBar } from '@/components/search/search-bar';
+import { AdvancedSearch } from '@/components/search/advanced-search';
+import { RecentPosts } from '@/components/sidebar/recent-posts';
 import type { Post } from '@/lib/types';
 import { useState, useEffect } from 'react';
 
@@ -14,9 +15,14 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/posts')
       .then(res => res.json())
-      .then(posts => {
+      .then(data => {
+        const posts = Array.isArray(data) ? data : [];
         setAllPosts(posts);
         setFilteredPosts(posts);
+      })
+      .catch(() => {
+        setAllPosts([]);
+        setFilteredPosts([]);
       });
   }, []);
 
@@ -29,11 +35,8 @@ export default function Home() {
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
           A space for curated articles, research, and creative works. Explore, learn, and engage with our community.
         </p>
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center">
           <Button asChild>
-            <Link href="/posts/new">Create a Post</Link>
-          </Button>
-          <Button variant="secondary" asChild>
             <Link href="#featured-posts">Explore Posts</Link>
           </Button>
         </div>
@@ -42,18 +45,25 @@ export default function Home() {
       <section id="featured-posts" className="py-16">
         <h2 className="font-headline text-4xl font-bold text-center mb-8">Featured Posts</h2>
         <div className="mb-8">
-          <SearchBar posts={allPosts} onResults={setFilteredPosts} />
+          <AdvancedSearch posts={allPosts} onResults={setFilteredPosts} />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPosts.map((post: Post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-        {filteredPosts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No posts found matching your search.</p>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+              {Array.isArray(filteredPosts) && filteredPosts.map((post: Post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+            {filteredPosts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No posts found matching your search.</p>
+              </div>
+            )}
           </div>
-        )}
+          <div className="lg:col-span-1">
+            <RecentPosts />
+          </div>
+        </div>
       </section>
     </div>
   );

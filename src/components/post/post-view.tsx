@@ -1,7 +1,7 @@
 'use client';
 
 import type { Post } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags, Link } from 'lucide-react';
+import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags, Link, Eye } from 'lucide-react';
 import { generatePostSummary } from '@/ai/flows/generate-post-summary';
 import {
   Dialog,
@@ -20,12 +20,27 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from '@/components/ui/skeleton';
+import { SocialShare } from '@/components/post/social-share';
+import { TableOfContents } from '@/components/post/table-of-contents';
+import { RelatedPosts } from '@/components/post/related-posts';
+import { FunctionalComments } from '@/components/post/functional-comments';
+import { PostRating } from '@/components/post/post-rating';
+import { ExportOptions } from '@/components/post/export-options';
+import { calculateReadingTime } from '@/lib/reading-time';
+import { useReadingProgress } from '@/hooks/use-reading-progress';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Clock } from 'lucide-react';
 
 export function PostView({ post }: { post: Post }) {
   const [summary, setSummary] = useState('');
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  
+  useReadingProgress(post.id);
+
+  useEffect(() => {
+    fetch(`/api/posts/${post.id}/views`, { method: 'POST' });
+  }, [post.id]);
 
   const handleGenerateSummary = async () => {
     setIsLoadingSummary(true);
@@ -65,6 +80,20 @@ export function PostView({ post }: { post: Post }) {
           </div>
           <span>•</span>
           <time dateTime={post.createdAt}>{post.createdAt}</time>
+          <span>•</span>
+          <div className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            <span>{calculateReadingTime(post.content)}</span>
+          </div>
+          <span>•</span>
+          <div className="flex items-center gap-1">
+            <Eye className="h-4 w-4" />
+            <span>{post.views || 0} views</span>
+          </div>
+        </div>
+        <div className="flex justify-center gap-4 mt-4">
+          <SocialShare title={post.title} url={typeof window !== 'undefined' ? `${window.location.origin}/posts/${post.id}` : `/posts/${post.id}`} />
+          <ExportOptions post={post} />
         </div>
       </div>
       
@@ -98,6 +127,8 @@ export function PostView({ post }: { post: Post }) {
           </DialogContent>
         </Dialog>
       )}
+
+      <TableOfContents content={post.content} />
 
       <div className="prose prose-lg dark:prose-invert max-w-none mx-auto leading-relaxed mb-12">
         <ReactMarkdown
@@ -148,7 +179,7 @@ export function PostView({ post }: { post: Post }) {
             {post.lectures.map(lecture => (
               <Card key={lecture.id} className="group overflow-hidden">
                 <div className="relative aspect-video">
-                   <Image src={lecture.thumbnailUrl} alt={lecture.title} fill className="object-cover" data-ai-hint="video thumbnail" />
+                   <Image src={lecture.thumbnailUrl} alt={lecture.title} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" data-ai-hint="video thumbnail" />
                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                      <Clapperboard className="h-12 w-12 text-white" />
                    </div>
@@ -186,41 +217,11 @@ export function PostView({ post }: { post: Post }) {
         </section>
       )}
 
-      <section>
-        <h2 className="font-headline text-3xl font-bold mb-6 flex items-center"><MessageSquare className="mr-3 h-7 w-7 text-primary" />Comments ({post.comments.length})</h2>
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-6">
-              {post.comments.map(comment => (
-                <div key={comment.id} className="flex items-start space-x-4">
-                  <Avatar>
-                    <AvatarImage src={comment.author.avatarUrl} data-ai-hint="user avatar"/>
-                    <AvatarFallback>{comment.author.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold">{comment.author.name}</p>
-                      <p className="text-xs text-muted-foreground">{comment.createdAt}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{comment.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Separator className="my-6"/>
-            <div className="flex items-start space-x-4">
-               <Avatar>
-                  <AvatarImage src={post.author.avatarUrl} data-ai-hint="current user avatar" />
-                  <AvatarFallback>{authorInitials}</AvatarFallback>
-                </Avatar>
-              <div className="w-full space-y-2">
-                <Textarea placeholder="Write a comment..." />
-                <Button>Post Comment</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+      <PostRating postId={post.id} />
+      
+      <RelatedPosts currentPost={post} />
+      
+      <FunctionalComments post={post} />
 
     </article>
   );

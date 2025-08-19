@@ -21,6 +21,7 @@ if (!globalStore.postsStore) {
       comments: comments,
       recommendedBooks: books,
       lectures: lectures,
+      views: 0,
     },
     {
       id: '2',
@@ -35,6 +36,7 @@ if (!globalStore.postsStore) {
       comments: [],
       recommendedBooks: [],
       lectures: [],
+      views: 0,
     },
   ];
 }
@@ -50,6 +52,7 @@ export function addPost(postData: Omit<Post, 'id' | 'author' | 'createdAt' | 'co
     recommendedBooks: [],
     lectures: [],
     coverImage: 'https://placehold.co/1200x630.png',
+    views: 0,
     ...postData,
   };
   globalStore.postsStore.unshift(newPost);
@@ -58,4 +61,11 @@ export function addPost(postData: Omit<Post, 'id' | 'author' | 'createdAt' | 'co
 
 export function getPostById(id: string): Post | undefined {
   return globalStore.postsStore.find(post => post.id === id);
+}
+
+export function incrementViews(id: string): void {
+  const post = globalStore.postsStore.find(post => post.id === id);
+  if (post) {
+    post.views = (post.views || 0) + 1;
+  }
 }

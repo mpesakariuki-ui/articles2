@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { DraftSystem } from '@/components/post/draft-system';
 import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
@@ -21,6 +22,16 @@ export function PostEditor() {
   const { toast } = useToast();
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const formData = { title: '', content, category: '', tags: '' };
+  
+  const loadDraftData = (data: any) => {
+    setContent(data.content || '');
+    setSubtopic(data.subtopic || '');
+    setBookRecs(data.bookRecs || '');
+    setLectures(data.lectures || '');
+    setReferences(data.references || '');
+  };
 
   const applyFormat = (format: string, isBlock = false) => {
     const textarea = textareaRef.current;
@@ -281,7 +292,8 @@ export function PostEditor() {
               />
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <DraftSystem formData={formData} onLoadDraft={loadDraftData} />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Publishing...' : 'Publish'}
               </Button>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { posts } from '@/lib/store';
+import { addPost, getPosts } from '@/lib/firestore';
 import { users } from '@/lib/data';
 
 export async function POST(request: NextRequest) {
@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
     }
 
     const newPost = {
-      id: String(Date.now()),
       title,
       content: content + (subtopic ? `\n\n## ${subtopic}` : ''),
       category: category || 'General',
@@ -36,15 +35,21 @@ export async function POST(request: NextRequest) {
       })) : [],
       references: references ? references.split('\n').filter(Boolean) : [],
       coverImage: coverImage || 'https://placehold.co/1200x630.png',
+      views: 0,
     };
 
-    posts.unshift(newPost);
-    return NextResponse.json({ success: true, post: newPost });
+    const postId = await addPost(newPost);
+    return NextResponse.json({ success: true, post: { id: postId, ...newPost } });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
   }
 }
 
 export async function GET() {
-  return NextResponse.json(posts);
+  try {
+    const posts = await getPosts();
+    return NextResponse.json(posts);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+  }
 }

@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from '@/components/providers/theme-provider';
+import { SignupReminder } from '@/components/auth/signup-reminder';
 
 
 export const metadata: Metadata = {
@@ -28,12 +30,20 @@ export default function RootLayout({
           "min-h-screen bg-background font-body antialiased",
         )}
       >
-        <div className="relative flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="relative flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+          <Toaster />
+          <SignupReminder />
+        </ThemeProvider>
       </body>
     </html>
   );

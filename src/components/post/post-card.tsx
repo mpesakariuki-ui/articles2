@@ -11,7 +11,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import type { Post } from '@/lib/types';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Clock } from 'lucide-react';
+import { calculateReadingTime } from '@/lib/reading-time';
 
 interface PostCardProps {
   post: Post;
@@ -31,6 +32,7 @@ export function PostCard({ post }: PostCardProps) {
             src={post.coverImage}
             alt={post.title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="rounded-t-lg object-cover"
             data-ai-hint="article illustration"
           />
@@ -54,7 +56,14 @@ export function PostCard({ post }: PostCardProps) {
           </Avatar>
           <div>
             <p className="text-sm font-medium">{post.author.name}</p>
-            <p className="text-xs text-muted-foreground">{post.createdAt}</p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{post.createdAt}</span>
+              <span>•</span>
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{calculateReadingTime(post.content)}</span>
+              </div>
+            </div>
           </div>
         </div>
         <Link href={`/posts/${post.id}`} className="flex items-center text-sm text-accent-foreground hover:text-accent transition-colors">
