@@ -1,10 +1,25 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PostCard } from '@/components/post/post-card';
 import { posts } from '@/lib/data';
 import type { Post } from '@/lib/types';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
+import * as React from 'react';
 
 export default function Home() {
+  const plugin = React.useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  )
+
   return (
     <div className="container mx-auto px-4 py-8">
       <section className="text-center py-16">
@@ -26,11 +41,28 @@ export default function Home() {
 
       <section id="featured-posts" className="py-16">
         <h2 className="font-headline text-4xl font-bold text-center mb-12">Featured Posts</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post: Post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
+        <Carousel 
+            plugins={[plugin.current]}
+            className="w-full"
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+          >
+          <CarouselContent>
+            {posts.map((post: Post) => (
+              <CarouselItem key={post.id} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-1">
+                  <PostCard post={post} />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </section>
     </div>
   );
