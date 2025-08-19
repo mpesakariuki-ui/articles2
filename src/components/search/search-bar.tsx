@@ -17,15 +17,18 @@ export function SearchBar({ posts, onResults }: SearchBarProps) {
     setQuery(searchQuery);
     
     if (!searchQuery.trim()) {
-      onResults(posts);
+      onResults(Array.isArray(posts) ? posts : []);
       return;
     }
 
-    const filtered = posts.filter(post =>
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    const postsArray = Array.isArray(posts) ? posts : [];
+    const filtered = postsArray.filter(post =>
+      (post.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (post.content || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (post.category || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (Array.isArray(post.tags) ? post.tags : []).some(tag => 
+        (tag || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
     );
     
     onResults(filtered);

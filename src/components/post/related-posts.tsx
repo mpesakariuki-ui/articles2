@@ -14,15 +14,21 @@ export function RelatedPosts({ currentPost }: RelatedPostsProps) {
   useEffect(() => {
     fetch('/api/posts')
       .then(res => res.json())
-      .then((posts: Post[]) => {
+      .then((data) => {
+        const posts = Array.isArray(data.posts) ? data.posts : [];
         const related = posts
-          .filter(post => post.id !== currentPost.id)
-          .filter(post => 
+          .filter((post: Post) => post.id !== currentPost.id)
+          .filter((post: Post) => 
             post.category === currentPost.category ||
-            post.tags.some(tag => currentPost.tags.includes(tag))
+            (Array.isArray(post.tags) && Array.isArray(currentPost.tags) &&
+             post.tags.some((tag: string) => currentPost.tags.includes(tag)))
           )
           .slice(0, 3);
         setRelatedPosts(related);
+      })
+      .catch((error) => {
+        console.error('Error fetching related posts:', error);
+        setRelatedPosts([]);
       });
   }, [currentPost]);
 
@@ -31,9 +37,9 @@ export function RelatedPosts({ currentPost }: RelatedPostsProps) {
   return (
     <section className="mb-12">
       <h2 className="font-headline text-3xl font-bold mb-6">Related Posts</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex flex-col space-y-4">
         {relatedPosts.map(post => (
-          <PostCard key={post.id} post={post} />
+          <PostCard key={post.id} post={post} minimal={true} />
         ))}
       </div>
     </section>

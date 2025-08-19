@@ -14,9 +14,18 @@ export default function CategoriesPage() {
     fetch('/api/posts')
       .then(res => res.json())
       .then(data => {
-        setPosts(data);
-        const uniqueCategories = [...new Set(data.map((post: Post) => post.category))];
+        const postsArray = Array.isArray(data.posts) ? data.posts : [];
+        setPosts(postsArray);
+        const categories = postsArray
+          .map((post: Post) => post.category)
+          .filter((category: unknown): category is string => typeof category === 'string');
+        const uniqueCategories = Array.from(new Set(categories)) as string[];
         setCategories(uniqueCategories);
+      })
+      .catch(error => {
+        console.error('Error fetching posts:', error);
+        setPosts([]);
+        setCategories([]);
       });
   }, []);
 

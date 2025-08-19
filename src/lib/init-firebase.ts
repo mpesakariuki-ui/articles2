@@ -9,7 +9,11 @@ export async function initializeFirebaseData() {
       {
         title: 'The Symbiosis of Art and Science in the Renaissance',
         content: 'The Renaissance was a period of profound cultural and intellectual transformation, characterized by a remarkable fusion of art and science. This era, spanning roughly from the 14th to the 17th century, saw artists like Leonardo da Vinci and Michelangelo not merely as creators of aesthetic beauty, but as rigorous investigators of the natural world.',
-        author: users[0],
+        author: {
+          id: 'kariuki-james',
+          name: 'Kariuki James',
+          avatarUrl: 'https://placehold.co/100x100.png'
+        },
         createdAt: 'October 26, 2023',
         category: 'Art History',
         tags: ['Renaissance', 'Art', 'Science', 'Leonardo da Vinci'],
@@ -24,7 +28,11 @@ export async function initializeFirebaseData() {
       {
         title: 'A Short Poem on Time',
         content: `A fleeting guest, a river's flow,\nWhere moments come and moments go.\nA silent thief, a healer's balm,\nIt brings the storm, and then the calm.`,
-        author: users[1],
+        author: {
+          id: 'kariuki-james',
+          name: 'Kariuki James',
+          avatarUrl: 'https://placehold.co/100x100.png'
+        },
         createdAt: 'November 5, 2023',
         category: 'Poetry',
         tags: ['Time', 'Life', 'Reflection'],

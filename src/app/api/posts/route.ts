@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addPost, getPosts } from '@/lib/firestore';
-import { users } from '@/lib/data';
+import type { Book, Lecture, Post } from '@/lib/types';
+
+interface CreatePostBody {
+  title: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  coverImage?: string;
+  subtopic?: string;
+  bookRecommendations?: string;
+  lectures?: string;
+  references?: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as CreatePostBody;
     const { title, content, category, tags, coverImage, subtopic, bookRecommendations, lectures, references } = body;
 
     if (!title || !content) {
@@ -17,16 +29,20 @@ export async function POST(request: NextRequest) {
       category: category || 'General',
       tags: tags || [],
       excerpt: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
-      author: users[0],
-      createdAt: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      author: {
+        id: 'kariuki-james',
+        name: 'Kariuki James',
+        avatarUrl: 'https://placehold.co/100x100.png'
+      },
+      createdAt: new Date().toISOString(),
       comments: [],
-      recommendedBooks: bookRecommendations ? bookRecommendations.split('\n').filter(Boolean).map((book, i) => ({
+      recommendedBooks: bookRecommendations ? bookRecommendations.split('\n').filter(Boolean).map((book: string, i: number) => ({
         id: `book-${i}`,
         title: book.split(' by ')[0] || book,
         author: book.split(' by ')[1] || 'Unknown',
         imageUrl: 'https://placehold.co/300x400.png'
       })) : [],
-      lectures: lectures ? lectures.split('\n').filter(Boolean).map((lecture, i) => ({
+      lectures: lectures ? lectures.split('\n').filter(Boolean).map((lecture: string, i: number) => ({
         id: `lecture-${i}`,
         title: lecture.split(' - ')[0] || lecture,
         type: 'video' as const,
@@ -41,15 +57,21 @@ export async function POST(request: NextRequest) {
     const postId = await addPost(newPost);
     return NextResponse.json({ success: true, post: { id: postId, ...newPost } });
   } catch (error) {
+    console.error('Error in POST /api/posts:', error);
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const posts = await getPosts();
-    return NextResponse.json(posts);
+    if (!Array.isArray(posts)) {
+      console.error('Posts is not an array:', posts);
+      return NextResponse.json({ posts: [] });
+    }
+    return NextResponse.json({ posts });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+    console.error('Error in GET /api/posts:', error);
+    return NextResponse.json({ posts: [], error: 'Failed to fetch posts' }, { status: 500 });
   }
 }

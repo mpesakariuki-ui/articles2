@@ -14,7 +14,7 @@ export function RecentPosts() {
     fetch('/api/posts')
       .then(res => res.json())
       .then((data) => {
-        const posts = Array.isArray(data) ? data : [];
+        const posts = Array.isArray(data.posts) ? data.posts : [];
         setRecentPosts(posts.slice(0, 5));
       })
       .catch(() => {

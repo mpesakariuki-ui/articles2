@@ -63,9 +63,18 @@ export function getPostById(id: string): Post | undefined {
   return globalStore.postsStore.find(post => post.id === id);
 }
 
-export function incrementViews(id: string): void {
-  const post = globalStore.postsStore.find(post => post.id === id);
-  if (post) {
-    post.views = (post.views || 0) + 1;
+import { doc, updateDoc, increment } from 'firebase/firestore';
+import { db } from './firebase';
+
+export const incrementViews = async (postId: string): Promise<void> => {
+  try {
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      views: increment(1)
+    });
+    console.log('Views incremented for post:', postId);
+  } catch (error) {
+    console.error('Error incrementing views:', error);
+    throw error;
   }
-}
+};

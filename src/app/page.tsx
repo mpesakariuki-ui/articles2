@@ -16,11 +16,13 @@ export default function Home() {
     fetch('/api/posts')
       .then(res => res.json())
       .then(data => {
-        const posts = Array.isArray(data) ? data : [];
+        const posts = Array.isArray(data.posts) ? data.posts : [];
+        console.log('Fetched posts:', posts); // Debug log
         setAllPosts(posts);
         setFilteredPosts(posts);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error fetching posts:', error);
         setAllPosts([]);
         setFilteredPosts([]);
       });
