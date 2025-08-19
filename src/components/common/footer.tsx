@@ -1,4 +1,5 @@
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Github, Linkedin, Mail } from 'lucide-react';
+import Link from 'next/link';
 
 export function Footer() {
   return (
@@ -7,8 +8,19 @@ export function Footer() {
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
           <BookOpen className="h-6 w-6 text-primary" />
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            © {new Date().getFullYear()} Pillar Page. All Rights Reserved.
+            © {new Date().getFullYear()} Kariuki James Kariuki. All Rights Reserved.
           </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub">
+            <Github className="h-6 w-6 text-muted-foreground transition-colors hover:text-primary" />
+          </Link>
+          <Link href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+            <Linkedin className="h-6 w-6 text-muted-foreground transition-colors hover:text-primary" />
+          </Link>
+          <Link href="mailto:jamexkarix583@gmail.com" aria-label="Email">
+            <Mail className="h-6 w-6 text-muted-foreground transition-colors hover:text-primary" />
+          </Link>
         </div>
       </div>
     </footer>
