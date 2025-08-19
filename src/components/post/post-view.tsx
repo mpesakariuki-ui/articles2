@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags } from 'lucide-react';
+import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags, Link } from 'lucide-react';
 import { generatePostSummary } from '@/ai/flows/generate-post-summary';
 import {
   Dialog,
@@ -159,6 +159,30 @@ export function PostView({ post }: { post: Post }) {
               </Card>
             ))}
           </div>
+        </section>
+      )}
+
+      {post.references && post.references.length > 0 && (
+        <section className="mb-12">
+          <h2 className="font-headline text-3xl font-bold mb-6 flex items-center"><Link className="mr-3 h-7 w-7 text-primary" />References</h2>
+          <Card>
+            <CardContent className="p-6">
+              <ul className="space-y-3">
+                {post.references.map((ref, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-muted-foreground mr-3">{index + 1}.</span>
+                    {ref.startsWith('http') ? (
+                      <a href={ref} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+                        {ref}
+                      </a>
+                    ) : (
+                      <span className="break-all">{ref}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </section>
       )}
 

@@ -39,4 +39,5 @@ export interface Post {
   comments: Comment[];
   recommendedBooks: Book[];
   lectures: Lecture[];
+  references?: string[];
 }

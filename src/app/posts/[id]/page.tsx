@@ -1,17 +1,11 @@
-import { posts } from '@/lib/data';
+import { getPostById } from '@/lib/store';
 import { PostView } from '@/components/post/post-view';
 import { notFound } from 'next/navigation';
 
-export async function generateStaticParams() {
-  // This function is for build time, new posts won't be included
-  // unless we re-build. In a real app, this would be dynamic.
-  return posts.map((post) => ({
-    id: post.id,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export default function PostPage({ params }: { params: { id: string } }) {
-  const post = posts.find((p) => p.id === params.id);
+  const post = getPostById(params.id);
 
   if (!post) {
     notFound();

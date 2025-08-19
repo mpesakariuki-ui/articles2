@@ -71,9 +71,11 @@ function UserNav() {
             <UserIcon className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <PenSquare className="mr-2 h-4 w-4" />
-            <span>New Post</span>
+          <DropdownMenuItem asChild>
+            <Link href="/posts/new">
+              <PenSquare className="mr-2 h-4 w-4" />
+              <span>New Post</span>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />

@@ -3,11 +3,23 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PostCard } from '@/components/post/post-card';
-import { posts } from '@/lib/data';
+import { SearchBar } from '@/components/search/search-bar';
 import type { Post } from '@/lib/types';
-import * as React from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    fetch('/api/posts')
+      .then(res => res.json())
+      .then(posts => {
+        setAllPosts(posts);
+        setFilteredPosts(posts);
+      });
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <section className="text-center py-16">
@@ -28,12 +40,20 @@ export default function Home() {
       </section>
 
       <section id="featured-posts" className="py-16">
-        <h2 className="font-headline text-4xl font-bold text-center mb-12">Featured Posts</h2>
+        <h2 className="font-headline text-4xl font-bold text-center mb-8">Featured Posts</h2>
+        <div className="mb-8">
+          <SearchBar posts={allPosts} onResults={setFilteredPosts} />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post: Post) => (
+          {filteredPosts.map((post: Post) => (
             <PostCard key={post.id} post={post} />
           ))}
         </div>
+        {filteredPosts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No posts found matching your search.</p>
+          </div>
+        )}
       </section>
     </div>
   );
