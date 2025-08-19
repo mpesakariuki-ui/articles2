@@ -12,14 +12,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import Autoplay from "embla-carousel-autoplay"
 import * as React from 'react';
 
 export default function Home() {
-  const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
-  )
-
   return (
     <div className="container mx-auto px-4 py-8">
       <section className="text-center py-16">
@@ -42,10 +37,7 @@ export default function Home() {
       <section id="featured-posts" className="py-16">
         <h2 className="font-headline text-4xl font-bold text-center mb-12">Featured Posts</h2>
         <Carousel 
-            plugins={[plugin.current]}
             className="w-full"
-            onMouseEnter={plugin.current.stop}
-            onMouseLeave={plugin.current.reset}
             opts={{
               align: "start",
               loop: true,
