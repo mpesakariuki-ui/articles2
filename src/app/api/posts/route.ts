@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addPost, getPosts } from '@/lib/firestore';
+import { dataCache } from '@/lib/cache';
 import type { Book, Lecture, Post } from '@/lib/types';
 
 interface CreatePostBody {
   title: string;
   content: string;
+  description?: string;
   category?: string;
   tags?: string[];
   coverImage?: string;
@@ -17,7 +19,7 @@ interface CreatePostBody {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as CreatePostBody;
-    const { title, content, category, tags, coverImage, subtopic, bookRecommendations, lectures, references } = body;
+    const { title, content, description, category, tags, coverImage, subtopic, bookRecommendations, lectures, references } = body;
 
     if (!title || !content) {
       return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
@@ -28,7 +30,7 @@ export async function POST(request: NextRequest) {
       content: content + (subtopic ? `\n\n## ${subtopic}` : ''),
       category: category || 'General',
       tags: tags || [],
-      excerpt: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
+      excerpt: description || content.substring(0, 150) + (content.length > 150 ? '...' : ''),
       author: {
         id: 'kariuki-james',
         name: 'Kariuki James',
@@ -55,6 +57,10 @@ export async function POST(request: NextRequest) {
     };
 
     const postId = await addPost(newPost);
+    
+    // Clear posts cache when new post is added
+    dataCache.clear();
+    
     return NextResponse.json({ success: true, post: { id: postId, ...newPost } });
   } catch (error) {
     console.error('Error in POST /api/posts:', error);
@@ -64,11 +70,22 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Check cache first
+    const cachedPosts = dataCache.get('posts');
+    if (cachedPosts) {
+      return NextResponse.json({ posts: cachedPosts });
+    }
+
+    // Fetch from database if not cached
     const posts = await getPosts();
     if (!Array.isArray(posts)) {
       console.error('Posts is not an array:', posts);
       return NextResponse.json({ posts: [] });
     }
+    
+    // Cache for 5 minutes
+    dataCache.set('posts', posts, 5);
+    
     return NextResponse.json({ posts });
   } catch (error) {
     console.error('Error in GET /api/posts:', error);

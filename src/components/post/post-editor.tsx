@@ -173,6 +173,17 @@ export function PostEditor() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Brief description for post cards (150 characters max)"
+                className="min-h-[80px]"
+                maxLength={150}
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="content">Content</Label>
               <div className="border rounded-md">
                 <div className="flex items-center gap-1 p-2 border-b bg-muted/50">

@@ -1,4 +1,4 @@
-import { BookOpen, Github, Linkedin, Mail } from 'lucide-react';
+import { BookOpen, Github, Linkedin, Mail, ExternalLink, X } from 'lucide-react';
 import Link from 'next/link';
 
 export function Footer() {
@@ -12,7 +12,7 @@ export function Footer() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub">
+          <Link href="https://github.com/JKTK25" target="_blank" rel="noreferrer" aria-label="GitHub">
             <Github className="h-6 w-6 text-muted-foreground transition-colors hover:text-primary" />
           </Link>
           <Link href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn">
@@ -20,6 +20,12 @@ export function Footer() {
           </Link>
           <Link href="mailto:jamexkarix583@gmail.com" aria-label="Email">
             <Mail className="h-6 w-6 text-muted-foreground transition-colors hover:text-primary" />
+          </Link>
+          <Link href="https://x.com/Kariuki__Ke?t=lg4mmSYCrr5cgQBD5I1-2Q&s=09" target="_blank" rel="noreferrer" aria-label="X (Twitter)">
+            <X className="h-6 w-6 text-muted-foreground transition-colors hover:text-primary" />
+          </Link>
+          <Link href="https://orcid.org/0009-0004-5033-5535" target="_blank" rel="noreferrer" aria-label="ORCID" className="text-muted-foreground transition-colors hover:text-primary font-medium text-sm">
+            ORCID
           </Link>
         </div>
       </div>
