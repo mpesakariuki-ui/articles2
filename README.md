@@ -5,13 +5,15 @@ A modern, full-featured article publishing platform built with Next.js, Firebase
 ## 🚀 Features
 
 - **Article Management**: Create, edit, and publish articles with rich text editor
-- **AI Reading Assistant**: Interactive AI features for summaries, Q&A, and concept explanations
-- **Community Hub**: User discussions and interactions around articles
+- **Advanced AI Reading Assistant**: Comprehensive AI features for enhanced reading experience
+- **Smart Text Interaction**: Hover definitions and text highlighting with AI explanations
+- **AI-Powered Recommendations**: Personalized article suggestions and smart bookmarks
+- **Interactive Community**: User discussions, comments, and AI chat assistant
+- **Mobile-First Design**: Fully responsive with touch-friendly interactions
+- **Anonymous Access**: Read articles without registration required
 - **Admin Dashboard**: Complete content management with analytics
-- **User Authentication**: Firebase Auth integration
-- **Mobile Responsive**: Optimized for all devices
 - **Dark/Light Theme**: Theme switching with light as default
-- **Caching System**: Improved performance with data caching
+- **Performance Optimized**: Caching system and scroll-based animations
 
 ## 🛠️ Tech Stack
 
@@ -90,6 +92,36 @@ To change admin email, update `ADMIN_EMAIL` in `src/lib/admin.ts`
 - **Fonts**: Update font imports in `src/app/layout.tsx`
 - **Components**: Customize UI components in `src/components/ui/`
 
+## 🤖 AI-Powered Reading Experience
+
+### Text Interaction
+- **Hover Definitions**: Hover over complex words for AI explanations
+- **Text Highlighting**: Select paragraphs/sentences for instant AI analysis
+- **Smart Tooltips**: Context-aware explanations with blue color theme
+- **Draggable Popups**: Move AI explanation cards around the screen
+- **Mobile Touch Support**: Full touch interaction support for smartphones
+
+### Personalized Features
+- **Reading Progress**: Track your reading journey
+- **Smart Recommendations**: AI analyzes your interests for suggestions
+- **Bookmark Intelligence**: AI identifies the most important passages
+- **Vocabulary Building**: Personal glossary with difficulty levels
+- **Export Options**: Download glossaries and bookmarks
+
+### Interactive Elements
+- **Scroll Animations**: Cards appear/disappear as you scroll
+- **Welcome System**: Smart welcome bar with scroll-based hiding
+- **Blinking Buttons**: Animated AI feature buttons for attention
+- **Responsive Design**: Optimized for all screen sizes and devices
+
+## 📱 Mobile Experience
+
+- **Touch-Friendly**: 44px minimum touch targets for mobile accessibility
+- **Responsive Layout**: Adaptive grid systems and typography
+- **Mobile Navigation**: Collapsible menu with touch interactions
+- **Drag Support**: Touch-enabled dragging for AI popups
+- **Optimized Spacing**: Mobile-first padding and margins
+
 ## 📱 Features Overview
 
 ### Article System
@@ -100,16 +132,24 @@ To change admin email, update `ADMIN_EMAIL` in `src/lib/admin.ts`
 - View tracking and analytics
 
 ### AI Features
-- Article summarization
-- Interactive Q&A about articles
-- Concept explanations
-- Discussion topic generation
+- **Smart Summaries**: Instant AI-generated article summaries on post cards and pages
+- **Interactive Q&A**: Ask questions about articles and get intelligent answers
+- **Text Highlighting**: Select any text to get AI explanations and references
+- **Real-time Definitions**: Hover over words for instant AI-powered definitions
+- **Reading Recommendations**: AI suggests related articles based on your interests
+- **Smart Bookmarks**: AI identifies and highlights key passages worth saving
+- **Personal Glossary**: AI builds vocabulary from your reading with exportable terms
+- **Reference Finder**: AI finds online URLs for article references
+- **Site Chat Assistant**: AI-powered chatbot for site navigation and content discovery
+- **Content Analysis**: AI explains recent posts and site themes
 
 ### Community
-- User discussions
-- Comment system
-- Community statistics
-- User profiles
+- **Interactive Comments**: Engage in discussions with scroll-reveal animations
+- **AI Chat Assistant**: Get help with site features and content discovery
+- **Recent Posts Analysis**: AI-powered explanations of current content themes
+- **Social Sharing**: Share articles across platforms
+- **Anonymous Reading**: Access all content without registration
+- **Coming Soon**: User profiles and reading groups
 
 ### Admin Panel
 - Content management
