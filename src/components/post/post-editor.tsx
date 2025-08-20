@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { DraftSystem } from '@/components/post/draft-system';
-import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export function PostEditor() {
@@ -92,6 +92,120 @@ export function PostEditor() {
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + 2, start + 19); // Select "Image description"
+    }, 0);
+  };
+
+  const insertLink = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let linkMarkdown;
+    if (selectedText) {
+      // Wrap selected text with link
+      linkMarkdown = `[${selectedText}](https://example.com)`;
+    } else {
+      // Insert new link
+      linkMarkdown = '[Link text](https://example.com)';
+    }
+    
+    const newContent = content.substring(0, start) + linkMarkdown + content.substring(end);
+    setContent(newContent);
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (selectedText) {
+        // Select the URL part
+        const urlStart = start + selectedText.length + 3;
+        textarea.setSelectionRange(urlStart, urlStart + 19);
+      } else {
+        // Select "Link text"
+        textarea.setSelectionRange(start + 1, start + 10);
+      }
+    }, 0);
+  };
+
+  const insertBulletList = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let listMarkdown;
+    if (selectedText) {
+      const lines = selectedText.split('\n');
+      listMarkdown = lines.map(line => line.trim() ? `- ${line.trim()}` : '').join('\n');
+    } else {
+      listMarkdown = '\n- List item\n';
+    }
+    
+    const newContent = content.substring(0, start) + listMarkdown + content.substring(end);
+    setContent(newContent);
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (!selectedText) {
+        textarea.setSelectionRange(start + 3, start + 12);
+      }
+    }, 0);
+  };
+
+  const insertNumberedList = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let listMarkdown;
+    if (selectedText) {
+      const lines = selectedText.split('\n');
+      listMarkdown = lines.map((line, index) => line.trim() ? `${index + 1}. ${line.trim()}` : '').join('\n');
+    } else {
+      listMarkdown = '\n1. List item\n';
+    }
+    
+    const newContent = content.substring(0, start) + listMarkdown + content.substring(end);
+    setContent(newContent);
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (!selectedText) {
+        textarea.setSelectionRange(start + 4, start + 13);
+      }
+    }, 0);
+  };
+
+  const applyAlignFormat = (alignment: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let alignedText;
+    if (selectedText) {
+      alignedText = `\n<div style="text-align: ${alignment};">${selectedText}</div>\n`;
+    } else {
+      alignedText = `\n<div style="text-align: ${alignment};">Your text here</div>\n`;
+    }
+    
+    const newContent = content.substring(0, start) + alignedText + content.substring(end);
+    setContent(newContent);
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (!selectedText) {
+        const textStart = start + `\n<div style="text-align: ${alignment};">`.length;
+        textarea.setSelectionRange(textStart, textStart + 13);
+      }
     }, 0);
   };
 
@@ -201,15 +315,18 @@ export function PostEditor() {
                     <Heading2 className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-1" />
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('- ', true)} title="Bullet List">
+                  <Button type="button" variant="ghost" size="sm" onClick={insertBulletList} title="Bullet List">
                     <List className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('1. ', true)} title="Numbered List">
+                  <Button type="button" variant="ghost" size="sm" onClick={insertNumberedList} title="Numbered List">
                     <ListOrdered className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-1" />
                   <Button type="button" variant="ghost" size="sm" onClick={insertImage} title="Insert Image">
                     <Image className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={insertLink} title="Insert Link">
+                    <Link className="h-4 w-4" />
                   </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={insertParagraph} title="New Paragraph">
                     <Pilcrow className="h-4 w-4" />
@@ -218,16 +335,16 @@ export function PostEditor() {
                     <Minus className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-1" />
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: left;">', true)} title="Align Left">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('left')} title="Align Left">
                     <AlignLeft className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: center;">', true)} title="Align Center">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('center')} title="Align Center">
                     <AlignCenter className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: right;">', true)} title="Align Right">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('right')} title="Align Right">
                     <AlignRight className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: justify;">', true)} title="Justify">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('justify')} title="Justify">
                     <AlignJustify className="h-4 w-4" />
                   </Button>
                 </div>

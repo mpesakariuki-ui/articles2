@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Post } from './types';
+import { dataCache } from './cache';
 
 // Type assertion for Firestore database
 const database = db as Firestore;
@@ -25,6 +26,13 @@ const database = db as Firestore;
 // Posts
 export const getPosts = async (): Promise<Post[]> => {
   try {
+    // Check cache first
+    const cachedPosts = dataCache.get<Post[]>('posts');
+    if (cachedPosts) {
+      console.log('Returning cached posts');
+      return cachedPosts;
+    }
+    
     console.log('Fetching posts from Firestore');
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(collection(database, 'posts'));
     const posts = querySnapshot.docs.map(doc => {
@@ -39,8 +47,11 @@ export const getPosts = async (): Promise<Post[]> => {
         category: data.category || 'Uncategorized',
         author: data.author || { id: '1', name: 'Anonymous', avatarUrl: '' }
       } as Post;
-    });
-    console.log('Fetched posts:', posts);
+    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    // Cache the posts for 5 minutes
+    dataCache.set('posts', posts, 5);
+    console.log('Fetched and cached posts:', posts);
     return posts;
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -50,6 +61,13 @@ export const getPosts = async (): Promise<Post[]> => {
 
 export const getPost = async (id: string): Promise<Post | null> => {
   try {
+    // Check cache first
+    const cachedPost = dataCache.get<Post>(`post_${id}`);
+    if (cachedPost) {
+      console.log('Returning cached post:', id);
+      return cachedPost;
+    }
+    
     const docRef = doc(database, 'posts', id);
     const docSnap: DocumentSnapshot<DocumentData> = await getDoc(docRef);
     
@@ -58,7 +76,7 @@ export const getPost = async (id: string): Promise<Post | null> => {
     }
 
     const data = docSnap.data();
-    return {
+    const post = {
       id: docSnap.id,
       ...data,
       createdAt: data.createdAt || new Date().toISOString(),
@@ -68,6 +86,10 @@ export const getPost = async (id: string): Promise<Post | null> => {
       category: data.category || 'Uncategorized',
       author: data.author || { id: '1', name: 'Anonymous', avatarUrl: '' }
     } as Post;
+    
+    // Cache the post for 10 minutes
+    dataCache.set(`post_${id}`, post, 10);
+    return post;
   } catch (error) {
     console.error('Error fetching post:', error);
     return null;

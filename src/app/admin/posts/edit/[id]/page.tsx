@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { getPost } from '@/lib/firestore';
 import type { Post } from '@/lib/types';
-import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useRef } from 'react';
 
@@ -103,6 +103,89 @@ export default function EditPost({ params }: { params: Promise<{ id: string }> }
     }, 0);
   };
 
+  const insertLink = () => {
+    const textarea = textareaRef.current;
+    if (!textarea || !post) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = post.content.substring(start, end);
+    
+    let linkMarkdown;
+    if (selectedText) {
+      linkMarkdown = `[${selectedText}](https://example.com)`;
+    } else {
+      linkMarkdown = '[Link text](https://example.com)';
+    }
+    
+    const newContent = post.content.substring(0, start) + linkMarkdown + post.content.substring(end);
+    setPost({...post, content: newContent});
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (selectedText) {
+        const urlStart = start + selectedText.length + 3;
+        textarea.setSelectionRange(urlStart, urlStart + 19);
+      } else {
+        textarea.setSelectionRange(start + 1, start + 10);
+      }
+    }, 0);
+  };
+
+  const insertBulletList = () => {
+    const textarea = textareaRef.current;
+    if (!textarea || !post) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = post.content.substring(start, end);
+    
+    let listMarkdown;
+    if (selectedText) {
+      const lines = selectedText.split('\n');
+      listMarkdown = lines.map(line => line.trim() ? `- ${line.trim()}` : '').join('\n');
+    } else {
+      listMarkdown = '\n- List item\n';
+    }
+    
+    const newContent = post.content.substring(0, start) + listMarkdown + post.content.substring(end);
+    setPost({...post, content: newContent});
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (!selectedText) {
+        textarea.setSelectionRange(start + 3, start + 12);
+      }
+    }, 0);
+  };
+
+  const insertNumberedList = () => {
+    const textarea = textareaRef.current;
+    if (!textarea || !post) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = post.content.substring(start, end);
+    
+    let listMarkdown;
+    if (selectedText) {
+      const lines = selectedText.split('\n');
+      listMarkdown = lines.map((line, index) => line.trim() ? `${index + 1}. ${line.trim()}` : '').join('\n');
+    } else {
+      listMarkdown = '\n1. List item\n';
+    }
+    
+    const newContent = post.content.substring(0, start) + listMarkdown + post.content.substring(end);
+    setPost({...post, content: newContent});
+    
+    setTimeout(() => {
+      textarea.focus();
+      if (!selectedText) {
+        textarea.setSelectionRange(start + 4, start + 13);
+      }
+    }, 0);
+  };
+
   if (loading) return <div className="container py-8">Loading...</div>;
   if (!post) return <div className="container py-8">Post not found</div>;
 
@@ -142,10 +225,10 @@ export default function EditPost({ params }: { params: Promise<{ id: string }> }
                     <Heading2 className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-1" />
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('- ', true)} title="Bullet List">
+                  <Button type="button" variant="ghost" size="sm" onClick={insertBulletList} title="Bullet List">
                     <List className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('1. ', true)} title="Numbered List">
+                  <Button type="button" variant="ghost" size="sm" onClick={insertNumberedList} title="Numbered List">
                     <ListOrdered className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-1" />
@@ -160,6 +243,10 @@ export default function EditPost({ params }: { params: Promise<{ id: string }> }
                   </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('justify')} title="Justify">
                     <AlignJustify className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6 mx-1" />
+                  <Button type="button" variant="ghost" size="sm" onClick={insertLink} title="Insert Link">
+                    <Link className="h-4 w-4" />
                   </Button>
                 </div>
                 <Textarea
