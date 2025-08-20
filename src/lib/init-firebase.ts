@@ -1,4 +1,4 @@
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import { users, comments, books, lectures } from './data';
 
@@ -50,7 +50,38 @@ export async function initializeFirebaseData() {
       await addDoc(collection(db, 'posts'), post);
     }
 
-    console.log('Firebase initialized with sample data');
+    // Initialize analytics data
+    const analyticsData = {
+      overview: {
+        totalPosts: samplePosts.length,
+        totalUsers: users.length,
+        totalViews: 0,
+        totalComments: comments.length
+      },
+      userAnalytics: {
+        timeRange: 'week',
+        data: [],
+        newUsers: users.length,
+        activeUsers: Math.floor(users.length * 0.7)
+      },
+      contentAnalytics: {
+        timeRange: 'week',
+        data: [],
+        topPosts: samplePosts.map(post => ({
+          id: post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          title: post.title,
+          views: 0,
+          comments: post.comments.length
+        })),
+        engagement: {
+          totalViews: 0,
+          totalComments: comments.length
+        }
+      }
+    };
+
+    await setDoc(doc(db, 'analytics', 'overview'), analyticsData);
+    console.log('Firebase initialized with sample data and analytics');
   } catch (error) {
     console.error('Error initializing Firebase:', error);
   }

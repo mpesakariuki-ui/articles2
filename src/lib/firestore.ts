@@ -7,6 +7,8 @@ import {
   updateDoc, 
   setDoc,
   arrayUnion,
+  query,
+  where,
   Firestore,
   DocumentData,
   QuerySnapshot,
@@ -115,6 +117,99 @@ export const getLastReadPost = async (userId: string): Promise<string | null> =>
     .sort((a, b) => b.data().lastRead.toDate() - a.data().lastRead.toDate());
   
   return userProgress.length > 0 ? userProgress[0].data().postId : null;
+};
+
+// Admin Functions
+export const getAdminStats = async () => {
+  try {
+    const [posts, users, admins] = await Promise.all([
+      getDocs(collection(db, 'posts')),
+      getDocs(collection(db, 'users')),
+      getDocs(collection(db, 'admins'))
+    ]);
+
+    const totalViews = posts.docs.reduce((sum, post) => sum + (post.data().views || 0), 0);
+    const totalComments = posts.docs.reduce((sum, post) => sum + (post.data().comments?.length || 0), 0);
+
+    return {
+      totalPosts: posts.size,
+      totalUsers: users.size,
+      totalAdmins: admins.size,
+      totalViews,
+      totalComments
+    };
+  } catch (error) {
+    console.error('Error getting admin stats:', error);
+    throw error;
+  }
+};
+
+export const getUserAnalytics = async (timeRange: 'day' | 'week' | 'month' = 'week') => {
+  const now = new Date();
+  let startDate = new Date();
+
+  switch (timeRange) {
+    case 'day':
+      startDate.setDate(now.getDate() - 1);
+      break;
+    case 'week':
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      startDate.setMonth(now.getMonth() - 1);
+      break;
+  }
+
+  try {
+    const usersQuery = query(
+      collection(db, 'users'),
+      where('createdAt', '>=', startDate),
+      where('createdAt', '<=', now)
+    );
+
+    const users = await getDocs(usersQuery);
+    return users.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error getting user analytics:', error);
+    throw error;
+  }
+};
+
+export const getContentAnalytics = async (timeRange: 'day' | 'week' | 'month' = 'week') => {
+  const now = new Date();
+  let startDate = new Date();
+
+  switch (timeRange) {
+    case 'day':
+      startDate.setDate(now.getDate() - 1);
+      break;
+    case 'week':
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      startDate.setMonth(now.getMonth() - 1);
+      break;
+  }
+
+  try {
+    const postsQuery = query(
+      collection(db, 'posts'),
+      where('createdAt', '>=', startDate),
+      where('createdAt', '<=', now)
+    );
+
+    const posts = await getDocs(postsQuery);
+    return posts.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error getting content analytics:', error);
+    throw error;
+  }
 };
 
 // Comments

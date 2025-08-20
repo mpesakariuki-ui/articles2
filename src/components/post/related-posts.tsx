@@ -15,15 +15,23 @@ export function RelatedPosts({ currentPost }: RelatedPostsProps) {
     fetch('/api/posts')
       .then(res => res.json())
       .then((data) => {
-        const posts = Array.isArray(data.posts) ? data.posts : [];
-        const related = posts
-          .filter((post: Post) => post.id !== currentPost.id)
-          .filter((post: Post) => 
-            post.category === currentPost.category ||
-            (Array.isArray(post.tags) && Array.isArray(currentPost.tags) &&
-             post.tags.some((tag: string) => currentPost.tags.includes(tag)))
-          )
-          .slice(0, 3);
+        const posts = Array.isArray(data) ? data : [];
+        
+        // First priority: same category posts
+        const sameCategoryPosts = posts.filter((post: Post) => 
+          post.id !== currentPost.id && post.category === currentPost.category
+        );
+        
+        // Second priority: posts with matching tags
+        const sameTagPosts = posts.filter((post: Post) => 
+          post.id !== currentPost.id && 
+          post.category !== currentPost.category &&
+          Array.isArray(post.tags) && Array.isArray(currentPost.tags) &&
+          post.tags.some((tag: string) => currentPost.tags.includes(tag))
+        );
+        
+        // Combine and limit to 3 posts
+        const related = [...sameCategoryPosts, ...sameTagPosts].slice(0, 3);
         setRelatedPosts(related);
       })
       .catch((error) => {

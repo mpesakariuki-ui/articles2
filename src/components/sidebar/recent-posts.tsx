@@ -27,19 +27,20 @@ export function RecentPosts() {
       <CardHeader>
         <CardTitle className="text-lg">Recent Posts</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {Array.isArray(recentPosts) && recentPosts.map(post => (
-          <div key={post.id} className="space-y-2">
-            <Link href={`/posts/${post.id}`} className="font-medium text-sm hover:text-primary line-clamp-2">
-              {post.title}
-            </Link>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <Badge variant="outline" className="text-xs">{post.category}</Badge>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{post.createdAt}</span>
+      <CardContent className="space-y-0">
+        {Array.isArray(recentPosts) && recentPosts.map((post, index) => (
+          <div key={post.id}>
+            <div className="py-3">
+              <Link href={`/posts/${post.id}`} className="font-medium text-sm hover:text-primary line-clamp-2 block mb-1">
+                {post.title}
+              </Link>
+              <div className="text-xs text-muted-foreground">
+                {post.createdAt}
               </div>
             </div>
+            {index < recentPosts.length - 1 && (
+              <div className="border-b border-border" />
+            )}
           </div>
         ))}
       </CardContent>

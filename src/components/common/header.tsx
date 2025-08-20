@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { BookOpen, LogOut, Settings, User as UserIcon, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -21,6 +21,7 @@ import {
 export function Header() {
   const { user, logout } = useAuth();
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'login' | 'signup' }>({ isOpen: false, mode: 'login' });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -32,29 +33,81 @@ export function Header() {
               Pillar Page
             </span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link href="/categories" className="transition-colors hover:text-foreground/80">
-              Categories
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+            <Link href="/categories">
+              <Button variant="outline">
+                Categories
+              </Button>
+            </Link>
+            <Link href="/community">
+              <Button variant="outline">
+                Community
+              </Button>
             </Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <ThemeToggle />
-          {user ? (
-            <UserNav user={user} onLogout={logout} />
-          ) : (
-            <>
-              <Button variant="ghost" onClick={() => setAuthModal({ isOpen: true, mode: 'login' })}>Login</Button>
-              <Button onClick={() => setAuthModal({ isOpen: true, mode: 'signup' })}>Sign Up</Button>
-              <AuthModal 
-                isOpen={authModal.isOpen} 
-                onClose={() => setAuthModal({ isOpen: false, mode: 'login' })} 
-                mode={authModal.mode} 
-              />
-            </>
-          )}
+          <div className="hidden md:flex items-center space-x-2">
+            {user ? (
+              <UserNav user={user} onLogout={logout} />
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => setAuthModal({ isOpen: true, mode: 'login' })}>Login</Button>
+                <Button onClick={() => setAuthModal({ isOpen: true, mode: 'signup' })}>Sign Up</Button>
+              </>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+          <AuthModal 
+            isOpen={authModal.isOpen} 
+            onClose={() => setAuthModal({ isOpen: false, mode: 'login' })} 
+            mode={authModal.mode} 
+          />
         </div>
       </div>
+      
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t bg-background">
+          <div className="container py-4 space-y-4">
+            <Link href="/categories" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="w-full justify-start">
+                Categories
+              </Button>
+            </Link>
+            <Link href="/community" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="w-full justify-start">
+                Community
+              </Button>
+            </Link>
+            {user ? (
+              <div className="space-y-2">
+                <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    Profile
+                  </Button>
+                </Link>
+                <Button variant="ghost" className="w-full justify-start" onClick={() => { logout(); setMobileMenuOpen(false); }}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Button variant="ghost" className="w-full" onClick={() => { setAuthModal({ isOpen: true, mode: 'login' }); setMobileMenuOpen(false); }}>Login</Button>
+                <Button className="w-full" onClick={() => { setAuthModal({ isOpen: true, mode: 'signup' }); setMobileMenuOpen(false); }}>Sign Up</Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
