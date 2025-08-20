@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags, Link, Eye } from 'lucide-react';
+import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags, Link, Eye, Shield, Edit, Trash2 } from 'lucide-react';
 import { generatePostSummary } from '@/ai/flows/generate-post-summary';
 import {
   Dialog,
@@ -32,17 +32,39 @@ import { calculateReadingTime } from '@/lib/reading-time';
 import { useReadingProgress } from '@/hooks/use-reading-progress';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Clock } from 'lucide-react';
+import { checkAdminAccess } from '@/lib/admin';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { pageview, event } from '@/lib/analytics';
 
 export function PostView({ post }: { post: Post }) {
   const [showAIModal, setShowAIModal] = useState(false);
+  const [hideMetadata, setHideMetadata] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const isAdmin = checkAdminAccess(user?.email);
 
   
   useReadingProgress(post.id);
 
   useEffect(() => {
     fetch(`/api/posts/${post.id}/views`, { method: 'POST' });
-  }, [post.id]);
+    
+    // Track page view
+    pageview(`/posts/${post.id}`);
+    event('page_view', 'post', post.title);
+    
+    const handleScroll = () => {
+      setHideMetadata(window.scrollY > 200);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [post.id, post.title]);
 
 
   
@@ -60,22 +82,27 @@ export function PostView({ post }: { post: Post }) {
         <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter">
           {post.title}
         </h1>
-        <div className="flex items-center justify-center space-x-4 text-muted-foreground">
+        <div className={`flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-muted-foreground transition-opacity duration-300 ${hideMetadata ? 'opacity-0' : 'opacity-100'}`}>
            <div className="flex items-center space-x-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={post.author.avatarUrl} data-ai-hint="author portrait" />
               <AvatarFallback>{authorInitials}</AvatarFallback>
             </Avatar>
-            <span className="font-medium">{post.author.name}</span>
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{post.author.name}</span>
+              {checkAdminAccess(post.author.email || 'jamexkarix583@gmail.com') && (
+                <Shield className="h-4 w-4 text-primary" title="Admin" />
+              )}
+            </div>
           </div>
-          <span>•</span>
+          <div className="hidden sm:block">•</div>
           <time dateTime={post.createdAt}>{post.createdAt}</time>
-          <span>•</span>
+          <div className="hidden sm:block">•</div>
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
             <span>{calculateReadingTime(post.content)}</span>
           </div>
-          <span>•</span>
+          <div className="hidden sm:block">•</div>
           <div className="flex items-center gap-1">
             <Eye className="h-4 w-4" />
             <span>{post.views || 0} views</span>
@@ -84,6 +111,34 @@ export function PostView({ post }: { post: Post }) {
         <div className="flex justify-center gap-4 mt-4">
           <SocialShare title={post.title} url={typeof window !== 'undefined' ? `${window.location.origin}/posts/${post.id}` : `/posts/${post.id}`} />
           <ExportOptions post={post} />
+          {isAdmin && (
+            <>
+              <Button variant="outline" size="sm" onClick={() => router.push(`/admin/posts/edit/${post.id}`)}>
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" onClick={async () => {
+                if (confirm('Are you sure you want to delete this post?')) {
+                  try {
+                    const response = await fetch(`/api/posts/${post.id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                      // Clear cache to refresh posts
+                      await fetch('/api/posts/cache', { method: 'DELETE' });
+                      toast({ title: 'Post deleted successfully' });
+                      router.push('/posts');
+                    } else {
+                      toast({ title: 'Failed to delete post', variant: 'destructive' });
+                    }
+                  } catch (error) {
+                    toast({ title: 'Error deleting post', variant: 'destructive' });
+                  }
+                }
+              }}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </>
+          )}
         </div>
       </div>
       
@@ -96,17 +151,19 @@ export function PostView({ post }: { post: Post }) {
 
       <TableOfContents content={post.content} />
 
-      <div className="prose prose-lg dark:prose-invert max-w-none mx-auto leading-relaxed mb-12">
+      <div className="prose prose-lg dark:prose-invert max-w-none mx-auto leading-relaxed mb-12 text-justify">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]}
           components={{
             h1: ({node, ...props}) => <h1 className="font-headline" {...props} />,
             h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
             h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
             hr: ({node, ...props}) => <Separator className="my-6" {...props} />,
+            div: ({node, ...props}) => <div {...props} />,
           }}
         >
-          {post.content}
+          {post.content.replace(/<div style="text-align: (left|center|right|justify);">(.*?)<\/div>/g, '<div style="text-align: $1;">$2</div>')}
         </ReactMarkdown>
       </div>
 

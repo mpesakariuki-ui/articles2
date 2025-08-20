@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { DraftSystem } from '@/components/post/draft-system';
-import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export function PostEditor() {
@@ -216,6 +216,19 @@ export function PostEditor() {
                   </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={insertDivider} title="Divider">
                     <Minus className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6 mx-1" />
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: left;">', true)} title="Align Left">
+                    <AlignLeft className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: center;">', true)} title="Align Center">
+                    <AlignCenter className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: right;">', true)} title="Align Right">
+                    <AlignRight className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('<div style="text-align: justify;">', true)} title="Justify">
+                    <AlignJustify className="h-4 w-4" />
                   </Button>
                 </div>
                 <Textarea

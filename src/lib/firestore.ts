@@ -6,6 +6,7 @@ import {
   addDoc, 
   updateDoc, 
   setDoc,
+  deleteDoc,
   arrayUnion,
   query,
   where,
@@ -242,6 +243,28 @@ export const addComment = async (postId: string, commentData: { text: string; au
     return comment;
   } catch (error) {
     console.error('Error adding comment:', error);
+    throw error;
+  }
+};
+
+export const updatePost = async (id: string, updates: Partial<Post>): Promise<void> => {
+  try {
+    const postRef = doc(database, 'posts', id);
+    await updateDoc(postRef, updates);
+    console.log('Post updated successfully:', id);
+  } catch (error) {
+    console.error('Error updating post:', error);
+    throw error;
+  }
+};
+
+export const deletePost = async (id: string): Promise<void> => {
+  try {
+    const postRef = doc(database, 'posts', id);
+    await deleteDoc(postRef);
+    console.log('Post deleted successfully:', id);
+  } catch (error) {
+    console.error('Error deleting post:', error);
     throw error;
   }
 };

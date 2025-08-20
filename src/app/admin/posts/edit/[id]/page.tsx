@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { AdminNav } from '@/components/admin/admin-nav';
 import { useToast } from '@/hooks/use-toast';
+import { getPost } from '@/lib/firestore';
 import type { Post } from '@/lib/types';
+import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { useRef } from 'react';
 
 export default function EditPost({ params }: { params: Promise<{ id: string }> }) {
   const [post, setPost] = useState<Post | null>(null);
@@ -17,50 +20,87 @@ export default function EditPost({ params }: { params: Promise<{ id: string }> }
   const [saving, setSaving] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    params.then(({ id }) => {
-      fetch(`/api/posts/${id}`)
-        .then(res => res.json())
-        .then(data => {
-          setPost(data);
-          setLoading(false);
-        })
-        .catch(() => {
-          toast({ title: "Error", description: "Failed to load post", variant: "destructive" });
-          setLoading(false);
-        });
-    });
-  }, [params, toast]);
+    const loadPost = async () => {
+      const { id } = await params;
+      const postData = await getPost(id);
+      if (postData) {
+        setPost(postData);
+      } else {
+        toast({ title: 'Post not found', variant: 'destructive' });
+        router.push('/admin');
+      }
+      setLoading(false);
+    };
+    loadPost();
+  }, [params, router, toast]);
 
-  const handleSave = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!post) return;
-    
+
     setSaving(true);
     try {
       const response = await fetch(`/api/posts/${post.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: post.title,
-          content: post.content,
-          category: post.category,
-          tags: post.tags,
-          coverImage: post.coverImage
-        })
+        body: JSON.stringify(post),
       });
 
       if (response.ok) {
-        toast({ title: "Success", description: "Post updated successfully" });
-        router.push('/admin/posts');
+        toast({ title: 'Post updated successfully' });
+        router.push(`/posts/${post.id}`);
       } else {
-        throw new Error('Failed to update post');
+        toast({ title: 'Failed to update post', variant: 'destructive' });
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to update post", variant: "destructive" });
+      toast({ title: 'Error updating post', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
+  };
+
+  const applyFormat = (format: string, isBlock = false) => {
+    const textarea = textareaRef.current;
+    if (!textarea || !post) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = post.content.substring(start, end);
+    
+    let newContent;
+    if (isBlock) {
+      newContent = post.content.substring(0, start) + format + selectedText + post.content.substring(end);
+    } else {
+      newContent = post.content.substring(0, start) + format + selectedText + format + post.content.substring(end);
+    }
+    
+    setPost({...post, content: newContent});
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + format.length, start + format.length + selectedText.length);
+    }, 0);
+  };
+
+  const applyAlignFormat = (alignment: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea || !post) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = post.content.substring(start, end);
+    
+    const openTag = `<div style="text-align: ${alignment};">`;
+    const closeTag = '</div>';
+    const newContent = post.content.substring(0, start) + openTag + selectedText + closeTag + post.content.substring(end);
+    
+    setPost({...post, content: newContent});
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + openTag.length, start + openTag.length + selectedText.length);
+    }, 0);
   };
 
   if (loading) return <div className="container py-8">Loading...</div>;
@@ -68,66 +108,89 @@ export default function EditPost({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="container max-w-4xl py-8">
-      <AdminNav />
       <Card>
         <CardHeader>
           <CardTitle>Edit Post</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={post.title}
-              onChange={(e) => setPost({...post, title: e.target.value})}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Input
-              id="category"
-              value={post.category}
-              onChange={(e) => setPost({...post, category: e.target.value})}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags (comma separated)</Label>
-            <Input
-              id="tags"
-              value={post.tags.join(', ')}
-              onChange={(e) => setPost({...post, tags: e.target.value.split(',').map(t => t.trim())})}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="coverImage">Cover Image URL</Label>
-            <Input
-              id="coverImage"
-              value={post.coverImage}
-              onChange={(e) => setPost({...post, coverImage: e.target.value})}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="content">Content</Label>
-            <Textarea
-              id="content"
-              value={post.content}
-              onChange={(e) => setPost({...post, content: e.target.value})}
-              className="min-h-[400px]"
-            />
-          </div>
-          
-          <div className="flex gap-4">
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/admin/posts')}>
-              Cancel
-            </Button>
-          </div>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={post.title}
+                onChange={(e) => setPost({...post, title: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="content">Content</Label>
+              <div className="border rounded-md">
+                <div className="flex items-center gap-1 p-2 border-b bg-muted/50">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('**')} title="Bold">
+                    <Bold className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('*')} title="Italic">
+                    <Italic className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6 mx-1" />
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('# ', true)} title="Heading 1">
+                    <Heading1 className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('## ', true)} title="Heading 2">
+                    <Heading2 className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6 mx-1" />
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('- ', true)} title="Bullet List">
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('1. ', true)} title="Numbered List">
+                    <ListOrdered className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6 mx-1" />
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('left')} title="Align Left">
+                    <AlignLeft className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('center')} title="Align Center">
+                    <AlignCenter className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('right')} title="Align Right">
+                    <AlignRight className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => applyAlignFormat('justify')} title="Justify">
+                    <AlignJustify className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Textarea
+                  ref={textareaRef}
+                  id="content"
+                  value={post.content}
+                  onChange={(e) => setPost({...post, content: e.target.value})}
+                  className="min-h-[400px] border-0 rounded-t-none focus-visible:ring-0"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={post.category}
+                onChange={(e) => setPost({...post, category: e.target.value})}
+              />
+            </div>
+
+            <div className="flex justify-between">
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>
