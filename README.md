@@ -82,7 +82,7 @@ firebase deploy --only firestore:rules
 
 ## 👤 Admin Access
 
-Admin access is configured for: `jamexkarix583@gmail.com`
+Admin access is configured for: `username@gmail.com`
 
 To change admin email, update `ADMIN_EMAIL` in `src/lib/admin.ts`
 
@@ -161,7 +161,6 @@ To change admin email, update `ADMIN_EMAIL` in `src/lib/admin.ts`
 
 - **GitHub**: [JKTK25](https://github.com/JKTK25)
 - **X (Twitter)**: [@Kariuki__Ke](https://x.com/Kariuki__Ke)
-- **ORCID**: [0009-0004-5033-5535](https://orcid.org/0009-0004-5033-5535)
 
 ## 📄 License
 
