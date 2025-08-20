@@ -4,7 +4,7 @@ declare global {
   }
 }
 
-export const GA_TRACKING_ID = 'G-9FKT8T77PG';
+export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_TRACKING_ID || 'G-9FKT8T77PG';
 
 export const pageview = (url: string) => {
   if (typeof window !== 'undefined' && window.gtag) {
