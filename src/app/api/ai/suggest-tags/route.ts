@@ -1,0 +1,28 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
+
+export async function POST(request: NextRequest) {
+  try {
+    const { content, title } = await request.json();
+    
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const prompt = `Based on this article title and content, suggest 5-7 relevant tags that would help categorize and make this content discoverable:
+
+Title: ${title}
+Content: ${content}
+
+Return only the tags as a comma-separated list:`;
+
+    const result = await model.generateContent(prompt);
+    const tagsText = result.response.text().trim();
+    const tags = tagsText.split(',').map(tag => tag.trim());
+    
+    return NextResponse.json({ tags });
+  } catch (error) {
+    console.error('Error suggesting tags:', error);
+    return NextResponse.json({ error: 'Failed to suggest tags' }, { status: 500 });
+  }
+}

@@ -210,7 +210,7 @@ export default function EditPost({ params }: { params: Promise<{ id: string }> }
             <div className="space-y-2">
               <Label htmlFor="content">Content</Label>
               <div className="border rounded-md">
-                <div className="flex items-center gap-1 p-2 border-b bg-muted/50">
+                <div className="flex items-center gap-1 p-2 border-b bg-muted/50 overflow-x-auto flex-wrap">
                   <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('**')} title="Bold">
                     <Bold className="h-4 w-4" />
                   </Button>

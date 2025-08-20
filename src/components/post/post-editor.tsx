@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { DraftSystem } from '@/components/post/draft-system';
-import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link, Sparkles, Wand2, Tags } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export function PostEditor() {
@@ -209,6 +209,83 @@ export function PostEditor() {
     }, 0);
   };
 
+  const generateExcerpt = async () => {
+    if (!content.trim()) {
+      toast({ title: 'Please write some content first', variant: 'destructive' });
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/ai/generate-excerpt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      
+      const data = await response.json();
+      if (data.excerpt) {
+        setExcerpt(data.excerpt);
+        toast({ title: 'Excerpt generated successfully!' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to generate excerpt', variant: 'destructive' });
+    }
+  };
+
+  const suggestTags = async () => {
+    if (!content.trim()) {
+      toast({ title: 'Please write some content first', variant: 'destructive' });
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/ai/suggest-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, title })
+      });
+      
+      const data = await response.json();
+      if (data.tags) {
+        setTags(data.tags.join(', '));
+        toast({ title: 'Tags suggested successfully!' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to suggest tags', variant: 'destructive' });
+    }
+  };
+
+  const improveContent = async () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    if (!selectedText.trim()) {
+      toast({ title: 'Please select text to improve', variant: 'destructive' });
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/ai/improve-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: selectedText })
+      });
+      
+      const data = await response.json();
+      if (data.improvedText) {
+        const newContent = content.substring(0, start) + data.improvedText + content.substring(end);
+        setContent(newContent);
+        toast({ title: 'Content improved successfully!' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to improve content', variant: 'destructive' });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -300,7 +377,7 @@ export function PostEditor() {
             <div className="space-y-2">
               <Label htmlFor="content">Content</Label>
               <div className="border rounded-md">
-                <div className="flex items-center gap-1 p-2 border-b bg-muted/50">
+                <div className="flex items-center gap-1 p-2 border-b bg-muted/50 overflow-x-auto flex-wrap">
                   <Button type="button" variant="ghost" size="sm" onClick={() => applyFormat('**')} title="Bold">
                     <Bold className="h-4 w-4" />
                   </Button>
@@ -327,6 +404,16 @@ export function PostEditor() {
                   </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={insertLink} title="Insert Link">
                     <Link className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6 mx-1" />
+                  <Button type="button" variant="ghost" size="sm" onClick={generateExcerpt} title="AI Generate Excerpt">
+                    <Sparkles className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={suggestTags} title="AI Suggest Tags">
+                    <Tags className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={improveContent} title="AI Improve Content">
+                    <Wand2 className="h-4 w-4" />
                   </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={insertParagraph} title="New Paragraph">
                     <Pilcrow className="h-4 w-4" />

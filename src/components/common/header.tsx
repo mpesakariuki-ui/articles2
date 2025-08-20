@@ -44,6 +44,11 @@ export function Header() {
                 Community
               </Button>
             </Link>
+            <Link href="/about">
+              <Button variant="outline">
+                About
+              </Button>
+            </Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
@@ -84,6 +89,11 @@ export function Header() {
             <Link href="/community" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" className="w-full justify-start">
                 Community
+              </Button>
+            </Link>
+            <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="w-full justify-start">
+                About
               </Button>
             </Link>
             {user ? (

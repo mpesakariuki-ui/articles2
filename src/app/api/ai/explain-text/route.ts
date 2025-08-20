@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
+
+export async function POST(request: NextRequest) {
+  try {
+    const { text } = await request.json();
+    
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const prompt = `Explain this text passage in simple terms and provide relevant references:
+
+"${text}"
+
+Provide:
+1. A clear explanation of what this text means
+2. Key concepts or terms explained
+3. 2-3 relevant reference URLs (academic sources, Wikipedia, etc.)
+
+Format the response as:
+Explanation: [your explanation]
+References: [list of URLs]`;
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text().trim();
+    
+    // Parse explanation and references
+    const explanationMatch = responseText.match(/Explanation:\s*(.*?)(?=References:|$)/s);
+    const referencesMatch = responseText.match(/References:\s*(.*)/s);
+    
+    const explanation = explanationMatch ? explanationMatch[1].trim() : responseText;
+    const references = referencesMatch 
+      ? referencesMatch[1].split('\n')
+          .filter(line => line.includes('http'))
+          .map(line => line.trim())
+          .slice(0, 3)
+      : [];
+    
+    return NextResponse.json({ explanation, references });
+  } catch (error) {
+    console.error('Error explaining text:', error);
+    return NextResponse.json({ error: 'Failed to explain text' }, { status: 500 });
+  }
+}

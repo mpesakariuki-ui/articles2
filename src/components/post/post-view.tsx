@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags, Link, Eye, Shield, Edit, Trash2 } from 'lucide-react';
+import { BookOpen, Clapperboard, Film, MessageSquare, Sparkles, Tags, Link, Eye, Shield, Edit, Trash2, Target } from 'lucide-react';
 import { generatePostSummary } from '@/ai/flows/generate-post-summary';
 import {
   Dialog,
@@ -25,6 +25,12 @@ import { TableOfContents } from '@/components/post/table-of-contents';
 import { RelatedPosts } from '@/components/post/related-posts';
 import { FunctionalComments } from '@/components/post/functional-comments';
 import { AIFeaturesModal } from '@/components/post/ai-features-modal';
+import { SmartText } from '@/components/post/smart-text';
+import { ReadingRecommendations } from '@/components/post/reading-recommendations';
+import { SmartBookmarks } from '@/components/post/smart-bookmarks';
+import { PersonalGlossary } from '@/components/post/personal-glossary';
+import { ReferencesModal } from '@/components/post/references-modal';
+import { TextHighlighter } from '@/components/post/text-highlighter';
 
 import { PostRating } from '@/components/post/post-rating';
 import { ExportOptions } from '@/components/post/export-options';
@@ -42,6 +48,7 @@ import { pageview, event } from '@/lib/analytics';
 
 export function PostView({ post }: { post: Post }) {
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showReferencesModal, setShowReferencesModal] = useState(false);
   const [hideMetadata, setHideMetadata] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
@@ -76,10 +83,10 @@ export function PostView({ post }: { post: Post }) {
   const isLongPost = post.content.split(' ').length > 150;
 
   return (
-    <article className="container max-w-4xl py-8 md:py-12">
+    <article className="container max-w-4xl py-4 md:py-8 lg:py-12 px-4">
       <div className="space-y-4 text-center mb-12">
         <Badge variant="outline">{post.category}</Badge>
-        <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter">
+        <h1 className="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tighter px-2">
           {post.title}
         </h1>
         <div className={`flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-muted-foreground transition-opacity duration-300 ${hideMetadata ? 'opacity-0' : 'opacity-100'}`}>
@@ -142,8 +149,8 @@ export function PostView({ post }: { post: Post }) {
         </div>
       </div>
       
-      <div className="flex justify-center mb-8">
-        <Button variant="secondary" onClick={() => setShowAIModal(true)}>
+      <div className="flex justify-center mb-6 md:mb-8">
+        <Button variant="secondary" onClick={() => setShowAIModal(true)} className="animate-pulse touch-manipulation min-h-[44px]">
           <Sparkles className="mr-2 h-4 w-4" />
           AI Features
         </Button>
@@ -151,21 +158,24 @@ export function PostView({ post }: { post: Post }) {
 
       <TableOfContents content={post.content} />
 
-      <div className="prose prose-lg dark:prose-invert max-w-none mx-auto leading-relaxed mb-12 text-justify">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeRaw]}
-          components={{
-            h1: ({node, ...props}) => <h1 className="font-headline" {...props} />,
-            h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
-            h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
-            hr: ({node, ...props}) => <Separator className="my-6" {...props} />,
-            div: ({node, ...props}) => <div {...props} />,
-          }}
-        >
-          {post.content.replace(/<div style="text-align: (left|center|right|justify);">(.*?)<\/div>/g, '<div style="text-align: $1;">$2</div>')}
-        </ReactMarkdown>
-      </div>
+      <TextHighlighter>
+        <div className="prose prose-sm md:prose-lg dark:prose-invert max-w-none mx-auto leading-relaxed mb-8 md:mb-12 text-left md:text-justify">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              h1: ({node, ...props}) => <h1 className="font-headline" {...props} />,
+              h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
+              h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
+              hr: ({node, ...props}) => <Separator className="my-6" {...props} />,
+              div: ({node, ...props}) => <div {...props} />,
+              p: ({node, ...props}) => <p {...props} />,
+            }}
+          >
+            {post.content.replace(/<div style="text-align: (left|center|right|justify);">(.*?)<\/div>/g, '<div style="text-align: $1;">$2</div>')}
+          </ReactMarkdown>
+        </div>
+      </TextHighlighter>
 
       <div className="flex items-center space-x-2 mb-12">
         <Tags className="h-5 w-5 text-muted-foreground" />
@@ -218,7 +228,13 @@ export function PostView({ post }: { post: Post }) {
 
       {post.references && post.references.length > 0 && (
         <section className="mb-12">
-          <h2 className="font-headline text-3xl font-bold mb-6 flex items-center"><Link className="mr-3 h-7 w-7 text-primary" />References</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-headline text-3xl font-bold flex items-center"><Link className="mr-3 h-7 w-7 text-primary" />References</h2>
+            <Button variant="outline" size="sm" onClick={() => setShowReferencesModal(true)}>
+              <Sparkles className="h-4 w-4 mr-1" />
+              Find URLs
+            </Button>
+          </div>
           <Card>
             <CardContent className="p-6">
               <ul className="space-y-3">
@@ -242,6 +258,12 @@ export function PostView({ post }: { post: Post }) {
 
       <PostRating postId={post.id} />
       
+      <ReadingRecommendations currentPost={post} />
+      
+      <SmartBookmarks content={post.content} title={post.title} />
+      
+      <PersonalGlossary content={post.content} title={post.title} />
+      
       <RelatedPosts currentPost={post} />
       
       <FunctionalComments post={post} />
@@ -251,6 +273,20 @@ export function PostView({ post }: { post: Post }) {
         onClose={() => setShowAIModal(false)}
         articleContent={post.content}
         articleTitle={post.title}
+        features={[
+          { id: 'summarize', name: 'Summarize', description: 'Get a concise summary of this article', icon: 'FileText' },
+          { id: 'explain', name: 'Explain Concepts', description: 'Get explanations of key concepts', icon: 'HelpCircle' },
+          { id: 'questions', name: 'Discussion Questions', description: 'Generate questions for deeper thinking', icon: 'MessageSquare' },
+          { id: 'quiz', name: 'Quick Quiz', description: 'Test your understanding', icon: 'Brain' },
+          { id: 'keypoints', name: 'Key Points', description: 'Extract main points and highlights', icon: 'Target' },
+          { id: 'related', name: 'Related Topics', description: 'Find related topics to explore', icon: 'BookOpen' }
+        ]}
+      />
+      
+      <ReferencesModal 
+        isOpen={showReferencesModal}
+        onClose={() => setShowReferencesModal(false)}
+        references={post.references || []}
       />
     </article>
   );

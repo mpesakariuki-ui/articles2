@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import type { Comment, Post } from '@/lib/types';
 import { MessageSquare } from 'lucide-react';
+import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 interface FunctionalCommentsProps {
   post: Post;
@@ -22,6 +23,7 @@ export function FunctionalComments({ post }: FunctionalCommentsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { ref, isVisible } = useScrollReveal();
 
   useEffect(() => {
     fetchComments();
@@ -91,7 +93,8 @@ export function FunctionalComments({ post }: FunctionalCommentsProps) {
   };
 
   return (
-    <section className="mb-12">
+    <div ref={ref} className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+      <section className="mb-12">
       <h2 className="font-headline text-3xl font-bold mb-6 flex items-center">
         <MessageSquare className="mr-3 h-7 w-7 text-primary" />
         Comments ({comments.length})
@@ -173,6 +176,7 @@ export function FunctionalComments({ post }: FunctionalCommentsProps) {
           )}
         </CardContent>
       </Card>
-    </section>
+      </section>
+    </div>
   );
 }

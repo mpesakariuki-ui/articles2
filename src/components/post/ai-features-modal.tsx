@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, HelpCircle, Lightbulb, BookOpen, X, Sparkles } from 'lucide-react';
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+
 
 interface AIFeaturesModalProps {
   isOpen: boolean;
@@ -29,11 +28,13 @@ export function AIFeaturesModal({ isOpen, onClose, articleContent, articleTitle 
   const generateSummary = async () => {
     setLoadingSummary(true);
     try {
-      const { text } = await generateText({
-        model: openai('gpt-3.5-turbo'),
-        prompt: `Summarize this article in 2-3 sentences: "${articleTitle}"\n\n${articleContent.slice(0, 2000)}`,
+      const response = await fetch('/api/ai/generate-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: articleContent, title: articleTitle })
       });
-      setSummary(text);
+      const data = await response.json();
+      setSummary(data.summary || 'Sorry, I couldn\'t generate a summary.');
     } catch (error) {
       setSummary('Sorry, I couldn\'t generate a summary. Please try again.');
     } finally {
@@ -46,11 +47,13 @@ export function AIFeaturesModal({ isOpen, onClose, articleContent, articleTitle 
     
     setLoading(true);
     try {
-      const { text } = await generateText({
-        model: openai('gpt-3.5-turbo'),
-        prompt: `Based on this article titled "${articleTitle}":\n\n${articleContent.slice(0, 2000)}...\n\nAnswer this question: ${question}\n\nProvide a clear, concise answer based on the article content.`,
+      const response = await fetch('/api/ai/ask-question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: articleContent, title: articleTitle, question })
       });
-      setResponse(text);
+      const data = await response.json();
+      setResponse(data.answer || 'Sorry, I couldn\'t process your question.');
     } catch (error) {
       setResponse('Sorry, I couldn\'t process your question. Please try again.');
     } finally {
@@ -61,11 +64,13 @@ export function AIFeaturesModal({ isOpen, onClose, articleContent, articleTitle 
   const explainConcept = async (concept: string) => {
     setLoading(true);
     try {
-      const { text } = await generateText({
-        model: openai('gpt-3.5-turbo'),
-        prompt: `Explain the concept "${concept}" in simple terms, in the context of this article: "${articleTitle}". Keep it brief and easy to understand.`,
+      const response = await fetch('/api/ai/explain-concept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ concept, title: articleTitle })
       });
-      setResponse(text);
+      const data = await response.json();
+      setResponse(data.explanation || 'Sorry, I couldn\'t explain this concept.');
     } catch (error) {
       setResponse('Sorry, I couldn\'t explain this concept. Please try again.');
     } finally {
@@ -76,12 +81,13 @@ export function AIFeaturesModal({ isOpen, onClose, articleContent, articleTitle 
   const generateDiscussions = async () => {
     setLoading(true);
     try {
-      const { text } = await generateText({
-        model: openai('gpt-3.5-turbo'),
-        prompt: `Based on the article "${articleTitle}", generate 3 thought-provoking discussion questions that would engage readers. Format as a simple list.`,
+      const response = await fetch('/api/ai/generate-discussions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: articleContent, title: articleTitle })
       });
-      const questions = text.split('\n').filter(line => line.trim()).slice(0, 3);
-      setDiscussions(questions);
+      const data = await response.json();
+      setDiscussions(data.questions || ['What did you find most interesting about this article?']);
     } catch (error) {
       setDiscussions(['What did you find most interesting about this article?']);
     } finally {
@@ -92,14 +98,15 @@ export function AIFeaturesModal({ isOpen, onClose, articleContent, articleTitle 
   const extractConcepts = async () => {
     setLoading(true);
     try {
-      const { text } = await generateText({
-        model: openai('gpt-3.5-turbo'),
-        prompt: `Extract 5 key concepts or terms from this article that readers might want explained: "${articleContent.slice(0, 1000)}". Return only the terms, separated by commas.`,
+      const response = await fetch('/api/ai/extract-concepts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: articleContent })
       });
-      const conceptList = text.split(',').map(c => c.trim()).slice(0, 5);
-      setConcepts(conceptList);
+      const data = await response.json();
+      setConcepts(data.concepts || ['Key concept', 'Important term']);
     } catch (error) {
-      setConcepts(['Renaissance', 'Art', 'Science']);
+      setConcepts(['Key concept', 'Important term']);
     } finally {
       setLoading(false);
     }
