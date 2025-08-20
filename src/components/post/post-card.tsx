@@ -47,7 +47,7 @@ export function PostCard({ post, minimal = false }: PostCardProps) {
           <CardTitle className={minimal ? "font-headline text-lg" : "font-headline text-2xl"}>
             <Link href={`/posts/${post.id}`}>{post.title}</Link>
           </CardTitle>
-          {!minimal && <CardDescription className="line-clamp-2">{post.excerpt}</CardDescription>}
+          {!minimal && <CardDescription className="line-clamp-2">{post.excerpt.replace(/<[^>]*>/g, '')}</CardDescription>}
         </div>
       </CardHeader>
       {!minimal && <CardContent className="flex-grow" />}
