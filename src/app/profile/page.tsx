@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { getUserReadingStats, ReadingStats } from '@/lib/analytics';
+
 import { generateRecommendations } from '@/ai/flows/generate-recommendations';
 import { User, Mail, MapPin, Calendar, BookOpen, TrendingUp, Target, Zap } from 'lucide-react';
 
@@ -24,7 +24,7 @@ export default function ProfilePage() {
     avatarUrl: 'https://placehold.co/100x100.png'
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [readingStats, setReadingStats] = useState<ReadingStats | null>(null);
+  const [readingStats, setReadingStats] = useState<any>(null);
   const [recommendations, setRecommendations] = useState<string[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const { toast } = useToast();
@@ -40,8 +40,13 @@ export default function ProfilePage() {
         avatarUrl: user.photoURL || 'https://placehold.co/100x100.png'
       });
       
-      // Load reading analytics
-      getUserReadingStats(user.uid).then(setReadingStats);
+      // Reading analytics placeholder
+      setReadingStats({
+        totalArticlesRead: 0,
+        readingStreak: 0,
+        completionRate: 0,
+        favoriteCategories: []
+      });
     }
   }, [user]);
 
