@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import type { Post } from '@/lib/types';
-import { ArrowRight, Clock, Sparkles } from 'lucide-react';
+import { ArrowRight, Clock, Sparkles, Eye } from 'lucide-react';
 import { calculateReadingTime } from '@/lib/reading-time';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -100,9 +100,15 @@ export function PostCard({ post, minimal = false }: PostCardProps) {
             <div className="text-xs text-muted-foreground text-center">
               <span>{post.createdAt}</span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{calculateReadingTime(post.content)}</span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{calculateReadingTime(post.content)}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />
+                <span>{post.views || 0}</span>
+              </div>
             </div>
           </div>
         ) : (

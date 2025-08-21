@@ -158,24 +158,30 @@ export function PostView({ post }: { post: Post }) {
 
       <TableOfContents content={post.content} />
 
-      <TextHighlighter>
-        <div className="prose prose-sm md:prose-lg dark:prose-invert max-w-none mx-auto leading-relaxed mb-8 md:mb-12 text-left md:text-justify">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-            components={{
-              h1: ({node, ...props}) => <h1 className="font-headline" {...props} />,
-              h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
-              h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
-              hr: ({node, ...props}) => <Separator className="my-6" {...props} />,
-              div: ({node, ...props}) => <div {...props} />,
-              p: ({node, ...props}) => <p {...props} />,
-            }}
-          >
-            {post.content.replace(/<div style="text-align: (left|center|right|justify);">(.*?)<\/div>/g, '<div style="text-align: $1;">$2</div>')}
-          </ReactMarkdown>
-        </div>
-      </TextHighlighter>
+      <Card className="mb-8 md:mb-12">
+        <CardContent className="p-0">
+          <div className="h-[800px] overflow-y-auto">
+            <TextHighlighter>
+              <div className="prose prose-sm md:prose-lg dark:prose-invert max-w-none leading-relaxed p-6 text-left md:text-justify animate-in slide-in-from-bottom duration-700">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
+                  components={{
+                    h1: ({node, ...props}) => <h1 className="font-headline" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
+                    hr: ({node, ...props}) => <Separator className="my-6" {...props} />,
+                    div: ({node, ...props}) => <div {...props} />,
+                    p: ({node, ...props}) => <p {...props} />,
+                  }}
+                >
+                  {post.content.replace(/<div style="text-align: (left|center|right|justify);">(.*?)<\/div>/g, '<div style="text-align: $1;">$2</div>')}
+                </ReactMarkdown>
+              </div>
+            </TextHighlighter>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center space-x-2 mb-12">
         <Tags className="h-5 w-5 text-muted-foreground" />
@@ -237,20 +243,22 @@ export function PostView({ post }: { post: Post }) {
           </div>
           <Card>
             <CardContent className="p-6">
-              <ul className="space-y-3">
-                {post.references.map((ref, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-muted-foreground mr-3">{index + 1}.</span>
-                    {ref.startsWith('http') ? (
-                      <a href={ref} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
-                        {ref}
-                      </a>
-                    ) : (
-                      <span className="break-all">{ref}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="max-h-64 overflow-y-auto">
+                <ul className="space-y-3">
+                  {post.references.map((ref, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-muted-foreground mr-3">{index + 1}.</span>
+                      {ref.startsWith('http') ? (
+                        <a href={ref} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+                          {ref}
+                        </a>
+                      ) : (
+                        <span className="break-all">{ref}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </section>

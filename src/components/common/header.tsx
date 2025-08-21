@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BookOpen, LogOut, Settings, User as UserIcon, Menu, X } from 'lucide-react';
+import { BookOpen, LogOut, Settings, User as UserIcon, Menu, X, Sparkles, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -49,9 +49,17 @@ export function Header() {
                 About
               </Button>
             </Link>
+            {user && (
+              <Link href="/create-post">
+                <Button variant="default">
+                  Create Post
+                </Button>
+              </Link>
+            )}
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
+          {user && <NotificationIcon />}
           <ThemeToggle />
           <div className="hidden md:flex items-center space-x-2">
             {user ? (
@@ -96,6 +104,13 @@ export function Header() {
                 About
               </Button>
             </Link>
+            {user && (
+              <Link href="/create-post" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="default" className="w-full justify-start">
+                  Create Post
+                </Button>
+              </Link>
+            )}
             {user ? (
               <div className="space-y-2">
                 <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
@@ -119,6 +134,71 @@ export function Header() {
         </div>
       )}
     </header>
+  );
+}
+
+function NotificationIcon() {
+  const { user } = useAuth();
+  const [hasNotifications, setHasNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch(`/api/notifications?userId=${user.uid}`);
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data);
+          setHasNotifications(data.some((n: any) => !n.read));
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+    
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="relative">
+          <Bell className="h-4 w-4" />
+          {hasNotifications && (
+            <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-80" align="end">
+        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {notifications.length > 0 ? (
+          notifications.map((notification) => (
+            <DropdownMenuItem key={notification.id} className="flex flex-col items-start p-3">
+              <div className="flex items-start justify-between w-full">
+                <span className="text-sm flex-1">{notification.message}</span>
+                {!notification.read && (
+                  <span className="h-2 w-2 bg-blue-500 rounded-full ml-2 mt-1 flex-shrink-0"></span>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground mt-1">
+                {new Date(notification.createdAt).toLocaleDateString()}
+              </span>
+            </DropdownMenuItem>
+          ))
+        ) : (
+          <DropdownMenuItem disabled>
+            <span className="text-sm text-muted-foreground">No notifications</span>
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -150,9 +230,23 @@ function UserNav({ user, onLogout }: { user: any; onLogout: () => void }) {
               <span>Profile</span>
             </Link>
           </DropdownMenuItem>
+          
+          <DropdownMenuItem asChild>
+            <Link href="/my-posts">
+              <BookOpen className="mr-2 h-4 w-4" />
+              <span>My Posts</span>
+            </Link>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem asChild>
+            <Link href="/analytics">
+              <Sparkles className="mr-2 h-4 w-4" />
+              <span>Analytics</span>
+            </Link>
+          </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
-            <Link href="/profile">
+            <Link href="/settings">
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </Link>

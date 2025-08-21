@@ -56,17 +56,19 @@ export function ReadingRecommendations({ currentPost }: ReadingRecommendationsPr
         </Button>
       </CardHeader>
       <CardContent>
-        {recommendations.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {recommendations.map((post) => (
-              <PostCard key={post.id} post={post} minimal />
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-center py-4">
-            Click "Get Recommendations" to discover articles tailored to your interests.
-          </p>
-        )}
+        <div className="max-h-64 overflow-y-auto">
+          {recommendations.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {recommendations.map((post) => (
+                <PostCard key={post.id} post={post} minimal />
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">
+              Click "Get Recommendations" to discover articles tailored to your interests.
+            </p>
+          )}
+        </div>
       </CardContent>
       </Card>
     </div>

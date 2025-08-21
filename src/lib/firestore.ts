@@ -47,7 +47,12 @@ export const getPosts = async (): Promise<Post[]> => {
         category: data.category || 'Uncategorized',
         author: data.author || { id: '1', name: 'Anonymous', avatarUrl: '' }
       } as Post;
-    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }).sort((a, b) => {
+      // Sort by views (descending) then by creation date (newest first)
+      const viewDiff = (b.views || 0) - (a.views || 0);
+      if (viewDiff !== 0) return viewDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
     
     // Cache the posts for 5 minutes
     dataCache.set('posts', posts, 5);
@@ -262,6 +267,31 @@ export const addComment = async (postId: string, commentData: { text: string; au
       comments: arrayUnion(comment)
     });
     
+    // Create notification for post author
+    const postDoc = await getDoc(postRef);
+    if (postDoc.exists()) {
+      const postData = postDoc.data();
+      const postAuthorEmail = postData.author?.email;
+      
+      if (postAuthorEmail && postAuthorEmail !== commentData.author.email) {
+        try {
+          await fetch('/api/notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: postAuthorEmail, // Using email as userId for now
+              type: 'comment',
+              message: `${commentData.author.name} commented on your post "${postData.title}"`,
+              postId: postId,
+              fromUserId: commentData.author.email
+            })
+          });
+        } catch (error) {
+          console.error('Error creating notification:', error);
+        }
+      }
+    }
+    
     return comment;
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -284,6 +314,10 @@ export const deletePost = async (id: string): Promise<void> => {
   try {
     const postRef = doc(database, 'posts', id);
     await deleteDoc(postRef);
+    
+    // Clear cache to ensure deleted posts don't appear
+    dataCache.clear();
+    
     console.log('Post deleted successfully:', id);
   } catch (error) {
     console.error('Error deleting post:', error);

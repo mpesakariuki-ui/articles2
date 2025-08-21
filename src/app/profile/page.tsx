@@ -10,8 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 
-import { generateRecommendations } from '@/ai/flows/generate-recommendations';
-import { User, Mail, MapPin, Calendar, BookOpen, TrendingUp, Target, Zap } from 'lucide-react';
+import { User } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -24,9 +23,7 @@ export default function ProfilePage() {
     avatarUrl: 'https://placehold.co/100x100.png'
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [readingStats, setReadingStats] = useState<any>(null);
-  const [recommendations, setRecommendations] = useState<string[]>([]);
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -40,37 +37,11 @@ export default function ProfilePage() {
         avatarUrl: user.photoURL || 'https://placehold.co/100x100.png'
       });
       
-      // Reading analytics placeholder
-      setReadingStats({
-        totalArticlesRead: 0,
-        readingStreak: 0,
-        completionRate: 0,
-        favoriteCategories: []
-      });
+
     }
   }, [user]);
 
-  const handleGenerateRecommendations = async () => {
-    if (!readingStats || !user) return;
-    
-    setLoadingRecommendations(true);
-    try {
-      const result = await generateRecommendations({
-        favoriteCategories: readingStats.favoriteCategories,
-        readingHistory: [], // Could be enhanced with actual history
-        completionRate: readingStats.completionRate
-      });
-      setRecommendations(result.recommendations);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate recommendations",
-        variant: "destructive"
-      });
-    } finally {
-      setLoadingRecommendations(false);
-    }
-  };
+
 
   const handleSave = () => {
     setIsEditing(false);
@@ -163,84 +134,6 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          
-          {/* AI Recommendations */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                AI Recommendations
-              </CardTitle>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleGenerateRecommendations}
-                disabled={loadingRecommendations || !readingStats}
-              >
-                {loadingRecommendations ? 'Generating...' : 'Get Recommendations'}
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {recommendations.length > 0 ? (
-                <ul className="space-y-2">
-                  {recommendations.map((rec, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <BookOpen className="h-4 w-4 mt-0.5 text-primary" />
-                      <span className="text-sm">{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-center text-muted-foreground text-sm">
-                  Click "Get Recommendations" to discover articles tailored to your reading preferences.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          
-          {/* Reading Analytics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Reading Analytics
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {readingStats ? (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold">{readingStats.totalArticlesRead}</div>
-                      <div className="text-sm text-muted-foreground">Articles Read</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold">{readingStats.readingStreak}</div>
-                      <div className="text-sm text-muted-foreground">Day Streak</div>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{readingStats.completionRate}%</div>
-                    <div className="text-sm text-muted-foreground">Completion Rate</div>
-                  </div>
-                  {readingStats.favoriteCategories.length > 0 && (
-                    <div>
-                      <div className="text-sm font-medium mb-2">Favorite Categories</div>
-                      <div className="flex flex-wrap gap-1">
-                        {readingStats.favoriteCategories.map(category => (
-                          <span key={category} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded">
-                            {category}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center text-muted-foreground">Loading analytics...</div>
-              )}
             </CardContent>
           </Card>
         </div>

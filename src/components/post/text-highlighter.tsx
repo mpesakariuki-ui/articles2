@@ -110,35 +110,37 @@ function HighlightPopup({ selectedText, position, onClose }: HighlightPopupProps
           "{selectedText.length > 100 ? selectedText.slice(0, 100) + '...' : selectedText}"
         </div>
         
-        {loading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
-        ) : (
-          <>
-            <p className="text-sm mb-3">{explanation}</p>
-            {references.length > 0 && (
-              <div>
-                <p className="text-xs font-medium mb-2">References:</p>
-                <div className="space-y-1">
-                  {references.map((ref, index) => (
-                    <a
-                      key={index}
-                      href={ref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs text-primary hover:underline"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      {ref.length > 40 ? ref.slice(0, 40) + '...' : ref}
-                    </a>
-                  ))}
+        <div className="max-h-48 overflow-y-auto">
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          ) : (
+            <>
+              <p className="text-sm mb-3">{explanation}</p>
+              {references.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium mb-2">References:</p>
+                  <div className="space-y-1">
+                    {references.map((ref, index) => (
+                      <a
+                        key={index}
+                        href={ref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        {ref.length > 40 ? ref.slice(0, 40) + '...' : ref}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

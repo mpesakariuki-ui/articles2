@@ -63,21 +63,23 @@ export function RecentPosts() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-0">
-          {Array.isArray(recentPosts) && recentPosts.map((post, index) => (
-            <div key={post.id}>
-              <div className="py-3">
-                <Link href={`/posts/${post.id}`} className="font-medium text-sm hover:text-primary line-clamp-2 block mb-1">
-                  {post.title}
-                </Link>
-                <div className="text-xs text-muted-foreground">
-                  {post.createdAt}
+          <div className="max-h-64 overflow-y-auto">
+            {Array.isArray(recentPosts) && recentPosts.map((post, index) => (
+              <div key={post.id}>
+                <div className="py-3">
+                  <Link href={`/posts/${post.id}`} className="font-medium text-sm hover:text-primary line-clamp-2 block mb-1">
+                    {post.title}
+                  </Link>
+                  <div className="text-xs text-muted-foreground">
+                    {post.createdAt}
+                  </div>
                 </div>
+                {index < recentPosts.length - 1 && (
+                  <div className="border-b border-border" />
+                )}
               </div>
-              {index < recentPosts.length - 1 && (
-                <div className="border-b border-border" />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </CardContent>
       </Card>
       

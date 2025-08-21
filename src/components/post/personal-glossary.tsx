@@ -81,31 +81,33 @@ export function PersonalGlossary({ content, title }: PersonalGlossaryProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {glossaryTerms.length > 0 ? (
-          <div className="space-y-4">
-            {glossaryTerms.map((term, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">{term.term}</h4>
-                  <Badge variant={
-                    term.difficulty === 'Basic' ? 'secondary' :
-                    term.difficulty === 'Intermediate' ? 'default' : 'destructive'
-                  }>
-                    {term.difficulty}
-                  </Badge>
+        <div className="max-h-64 overflow-y-auto">
+          {glossaryTerms.length > 0 ? (
+            <div className="space-y-4">
+              {glossaryTerms.map((term, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold">{term.term}</h4>
+                    <Badge variant={
+                      term.difficulty === 'Basic' ? 'secondary' :
+                      term.difficulty === 'Intermediate' ? 'default' : 'destructive'
+                    }>
+                      {term.difficulty}
+                    </Badge>
+                  </div>
+                  <p className="text-sm mb-2">{term.definition}</p>
+                  <p className="text-xs text-muted-foreground italic">
+                    Context: {term.context}
+                  </p>
                 </div>
-                <p className="text-sm mb-2">{term.definition}</p>
-                <p className="text-xs text-muted-foreground italic">
-                  Context: {term.context}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-center py-4">
-            AI will extract key terms and build your personal vocabulary from this article.
-          </p>
-        )}
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">
+              AI will extract key terms and build your personal vocabulary from this article.
+            </p>
+          )}
+        </div>
       </CardContent>
       </Card>
     </div>

@@ -8,6 +8,8 @@ import { RecentPosts } from '@/components/sidebar/recent-posts';
 import { SiteChatbot } from '@/components/chat/site-chatbot';
 import type { Post } from '@/lib/types';
 import { Sparkles, X } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/use-auth';
 import { useState, useEffect } from 'react';
 
 export default function Home() {
@@ -16,6 +18,10 @@ export default function Home() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const [scrolledToPosts, setScrolledToPosts] = useState(false);
+  const [showAISummary, setShowAISummary] = useState(false);
+  const [aiSummary, setAiSummary] = useState('');
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const dismissed = localStorage.getItem('welcomeDismissed');
@@ -44,6 +50,33 @@ export default function Home() {
     localStorage.setItem('welcomeDismissed', 'true');
   };
 
+  const generateAISummary = async () => {
+    setLoadingSummary(true);
+    try {
+      const response = await fetch('/api/ai/posts-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          posts: filteredPosts.slice(0, 10).map(post => ({
+            title: post.title,
+            excerpt: post.excerpt,
+            category: post.category
+          }))
+        })
+      });
+      
+      const data = await response.json();
+      setAiSummary(data.summary || 'Unable to generate summary at this time.');
+      setShowAISummary(true);
+    } catch (error) {
+      console.error('Error generating AI summary:', error);
+      setAiSummary('Failed to generate summary. Please try again.');
+      setShowAISummary(true);
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
   useEffect(() => {
     fetch('/api/posts')
       .then(res => res.json())
@@ -64,15 +97,22 @@ export default function Home() {
     <div className="container mx-auto px-4 py-4 md:py-8">
       <section className="text-center py-8 md:py-16">
         <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-4">
-          The Pillar of Knowledge
+          <span className="bg-gradient-to-r from-blue-600 via-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent animate-pulse bg-[length:400%_400%] animate-[gradient_3s_ease-in-out_infinite]">
+            The Pillar of Knowledge
+          </span>
         </h1>
         <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-8 px-2">
           A space for curated articles, research, and creative works. Explore, learn, and engage with our community.
         </p>
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-4">
           <Button asChild className="animate-pulse">
             <Link href="#featured-posts">Explore Posts</Link>
           </Button>
+          {user && (
+            <Button asChild variant="outline">
+              <Link href="/create-post">Create Post</Link>
+            </Button>
+          )}
         </div>
         
         {showWelcome && !welcomeDismissed && (
@@ -98,8 +138,42 @@ export default function Home() {
 
       <section id="featured-posts" className="py-8 md:py-16">
         <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 md:mb-8">Featured Posts</h2>
+        <div className="mb-6 pt-6 flex justify-center">
+          <div className="w-80 border-t-2 border-gray-300 dark:border-gray-600"></div>
+        </div>
         <div className="mb-6 md:mb-8">
-          <AdvancedSearch posts={allPosts} onResults={setFilteredPosts} />
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <Button 
+              onClick={generateAISummary}
+              variant="outline"
+              className="px-4 py-2 flex items-center gap-2 whitespace-nowrap"
+              disabled={loadingSummary}
+            >
+              <Sparkles className="h-4 w-4" />
+              {loadingSummary ? 'Generating...' : 'AI Summary'}
+            </Button>
+            <div className="w-full max-w-md sm:w-auto">
+              <AdvancedSearch posts={allPosts} onResults={setFilteredPosts} />
+            </div>
+          </div>
+          
+          {showAISummary && aiSummary && (
+            <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">AI Summary of Current Posts</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-200 whitespace-pre-wrap">{aiSummary}</p>
+                </div>
+                <button 
+                  onClick={() => setShowAISummary(false)}
+                  className="text-muted-foreground hover:text-foreground ml-auto"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
           <div className="lg:col-span-3">

@@ -62,26 +62,28 @@ export function SmartBookmarks({ content, title }: SmartBookmarksProps) {
         </Button>
       </CardHeader>
       <CardContent>
-        {keyPassages.length > 0 ? (
-          <div className="space-y-4">
-            {keyPassages.map((passage, index) => (
-              <div key={index} className="border rounded-lg p-4 bg-muted/30">
-                <div className="flex items-start justify-between mb-2">
-                  <Badge variant="secondary">{passage.importance}</Badge>
-                  <Button variant="ghost" size="sm" onClick={() => copyPassage(passage.text)}>
-                    <Copy className="h-4 w-4" />
-                  </Button>
+        <div className="max-h-64 overflow-y-auto">
+          {keyPassages.length > 0 ? (
+            <div className="space-y-4">
+              {keyPassages.map((passage, index) => (
+                <div key={index} className="border rounded-lg p-4 bg-muted/30">
+                  <div className="flex items-start justify-between mb-2">
+                    <Badge variant="secondary">{passage.importance}</Badge>
+                    <Button variant="ghost" size="sm" onClick={() => copyPassage(passage.text)}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-sm mb-2 italic">"{passage.text}"</p>
+                  <p className="text-xs text-muted-foreground">{passage.reason}</p>
                 </div>
-                <p className="text-sm mb-2 italic">"{passage.text}"</p>
-                <p className="text-xs text-muted-foreground">{passage.reason}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-center py-4">
-            AI will identify the most important passages worth bookmarking.
-          </p>
-        )}
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">
+              AI will identify the most important passages worth bookmarking.
+            </p>
+          )}
+        </div>
       </CardContent>
       </Card>
     </div>

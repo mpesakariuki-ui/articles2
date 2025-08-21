@@ -67,17 +67,17 @@ export function AdvancedSearch({ posts, onResults }: AdvancedSearchProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search articles, authors..."
+            placeholder="Search articles..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-9 text-sm"
           />
         </div>
-        <Button onClick={() => setShowFilters(!showFilters)} variant="outline">
-          <Filter className="h-4 w-4 mr-2" />
+        <Button onClick={() => setShowFilters(!showFilters)} variant="outline" size="sm">
+          <Filter className="h-4 w-4 mr-1" />
           Filters
         </Button>
-        <Button onClick={handleSearch}>Search</Button>
+        <Button onClick={handleSearch} size="sm">Search</Button>
       </div>
 
       {showFilters && (
