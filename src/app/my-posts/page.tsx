@@ -128,12 +128,20 @@ export default function MyPostsPage() {
           <h1 className="font-headline text-3xl md:text-4xl font-bold mb-2">My Posts</h1>
           <p className="text-muted-foreground">Manage your published articles</p>
         </div>
-        <Button asChild>
-          <Link href="/create-post">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create New Post
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild>
+            <Link href="/create-post">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create New Post
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/research/create">
+              <FileText className="mr-2 h-4 w-4" />
+              Submit Research Paper
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {loading ? (

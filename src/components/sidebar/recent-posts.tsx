@@ -63,7 +63,7 @@ export function RecentPosts() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-0">
-          <div className="max-h-64 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
             {Array.isArray(recentPosts) && recentPosts.map((post, index) => (
               <div key={post.id}>
                 <div className="py-3">

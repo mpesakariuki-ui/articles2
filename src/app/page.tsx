@@ -105,11 +105,14 @@ export default function Home() {
           A space for curated articles, research, and creative works. Explore, learn, and engage with our community.
         </p>
         <div className="flex justify-center gap-4">
-          <Button asChild className="animate-pulse">
+          <Button asChild className="animate-pulse bg-blue-600 hover:bg-blue-700">
             <Link href="#featured-posts">Explore Posts</Link>
           </Button>
+          <Button asChild className="animate-pulse bg-purple-600 hover:bg-purple-700">
+            <Link href="/research">Research</Link>
+          </Button>
           {user && (
-            <Button asChild variant="outline">
+            <Button asChild className="animate-pulse bg-green-600 hover:bg-green-700">
               <Link href="/create-post">Create Post</Link>
             </Button>
           )}

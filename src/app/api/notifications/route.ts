@@ -11,23 +11,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 });
     }
 
-    const notificationsQuery = query(
-      collection(db, 'notifications'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc'),
-      limit(20)
-    );
+    try {
+      const notificationsQuery = query(
+        collection(db, 'notifications'),
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc'),
+        limit(20)
+      );
 
-    const querySnapshot = await getDocs(notificationsQuery);
-    const notifications = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+      const querySnapshot = await getDocs(notificationsQuery);
+      const notifications = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-    return NextResponse.json(notifications);
+      return NextResponse.json(notifications);
+    } catch (queryError) {
+      // If collection doesn't exist or orderBy fails, return empty array
+      console.log('Notifications collection empty or index missing, returning empty array');
+      return NextResponse.json([]);
+    }
   } catch (error) {
     console.error('Error fetching notifications:', error);
-    return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
 

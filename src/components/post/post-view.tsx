@@ -31,6 +31,7 @@ import { SmartBookmarks } from '@/components/post/smart-bookmarks';
 import { PersonalGlossary } from '@/components/post/personal-glossary';
 import { ReferencesModal } from '@/components/post/references-modal';
 import { TextHighlighter } from '@/components/post/text-highlighter';
+import { FollowAuthor } from '@/components/post/follow-author';
 
 import { PostRating } from '@/components/post/post-rating';
 import { ExportOptions } from '@/components/post/export-options';
@@ -264,7 +265,13 @@ export function PostView({ post }: { post: Post }) {
         </section>
       )}
 
-      <PostRating postId={post.id} />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Rate this post:</span>
+          <PostRating postId={post.id} />
+        </div>
+        <FollowAuthor authorId={post.author.id} authorName={post.author.name} />
+      </div>
       
       <ReadingRecommendations currentPost={post} />
       

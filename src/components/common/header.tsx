@@ -44,18 +44,17 @@ export function Header() {
                 Community
               </Button>
             </Link>
+            <Link href="/research">
+              <Button variant="outline">
+                Research
+              </Button>
+            </Link>
             <Link href="/about">
               <Button variant="outline">
                 About
               </Button>
             </Link>
-            {user && (
-              <Link href="/create-post">
-                <Button variant="default">
-                  Create Post
-                </Button>
-              </Link>
-            )}
+
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
@@ -99,18 +98,17 @@ export function Header() {
                 Community
               </Button>
             </Link>
+            <Link href="/research" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="w-full justify-start">
+                Research
+              </Button>
+            </Link>
             <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" className="w-full justify-start">
                 About
               </Button>
             </Link>
-            {user && (
-              <Link href="/create-post" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="default" className="w-full justify-start">
-                  Create Post
-                </Button>
-              </Link>
-            )}
+
             {user ? (
               <div className="space-y-2">
                 <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>

@@ -25,8 +25,7 @@ export function PostRating({ postId }: PostRatingProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-6">
-      <span className="text-sm font-medium">Rate this post:</span>
+    <div className="flex items-center gap-2">
       <div className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
           <Button

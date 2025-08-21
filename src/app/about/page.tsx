@@ -91,9 +91,32 @@ export default function AboutPage() {
       <section className="mb-12">
         <h2 className="font-headline text-3xl font-bold mb-6 flex items-center">
           <Zap className="mr-3 h-7 w-7 text-primary" />
-          AI-Powered Features
+          Platform Services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Article Publishing
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Create and publish articles with rich text editing, image uploads, and category organization. Share your knowledge with the community.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5 text-primary" />
+                Research Papers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Submit academic research papers with DOI assignment, peer review system, plagiarism detection, and PDF/Word export capabilities.</p>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -163,6 +186,30 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent>
               <p>Automatically find online sources and URLs for article references. Access original materials with one click.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Version Control
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Track paper revisions and updates with complete version history for research papers and collaborative writing.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Co-author Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Collaborate with multiple authors on research papers with email invitations and institutional affiliations.</p>
             </CardContent>
           </Card>
         </div>

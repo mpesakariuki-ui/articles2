@@ -50,23 +50,6 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  // Apply theme changes immediately
-  useEffect(() => {
-    if (settings.preferences.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (settings.preferences.theme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      // System theme
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      if (mediaQuery.matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-  }, [settings.preferences.theme]);
   const [settings, setSettings] = useState<UserSettings>({
     displayName: '',
     email: '',
@@ -88,6 +71,23 @@ export default function SettingsPage() {
       aiAssistance: true
     }
   });
+
+  // Apply theme changes immediately
+  useEffect(() => {
+    if (settings.preferences.theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (settings.preferences.theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      // System theme
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      if (mediaQuery.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [settings.preferences.theme]);
 
   useEffect(() => {
     if (authLoading) return;

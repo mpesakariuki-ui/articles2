@@ -1,10 +1,11 @@
 # Pillar Page - AI-Powered Article Platform
 
-A modern, full-featured article publishing platform built with Next.js, Firebase, and AI integration. Features include article management, community discussions, AI reading assistance, and comprehensive admin tools.
+A modern, full-featured article publishing platform built with Next.js, Firebase, and AI integration. Features include article management, research papers, community discussions, AI reading assistance, and comprehensive admin tools.
 
 ## 🚀 Features
 
 - **Article Management**: Create, edit, and publish articles with rich text editor
+- **Research Papers**: Academic publishing with DOI assignment, peer review, plagiarism detection
 - **Advanced AI Reading Assistant**: Comprehensive AI features for enhanced reading experience
 - **Smart Text Interaction**: Hover definitions and text highlighting with AI explanations
 - **AI-Powered Recommendations**: Personalized article suggestions and smart bookmarks
@@ -17,11 +18,11 @@ A modern, full-featured article publishing platform built with Next.js, Firebase
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript
+- **Frontend**: Next.js 15, React 18, TypeScript
 - **Styling**: Tailwind CSS, shadcn/ui components
 - **Backend**: Firebase Firestore, Firebase Auth
-- **AI Integration**: Google Generative AI
-- **Deployment**: Render (or Vercel/Netlify)
+- **AI Integration**: Google Generative AI (Gemini)
+- **Deployment**: Render, Vercel, or Netlify
 
 ## 📦 Installation
 
@@ -43,13 +44,19 @@ cp .env.local.example .env.local
 
 Add your Firebase and AI API keys to `.env.local`:
 ```
-GOOGLE_GENAI_API_KEY=your_google_ai_key
+# Firebase Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Google AI Configuration
+GOOGLE_GENAI_API_KEY=your_google_ai_key
+
+# Admin Configuration
+ADMIN_EMAIL=your_admin_email@gmail.com
 ```
 
 4. Run the development server:
@@ -62,10 +69,8 @@ npm run dev
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
 2. Enable Firestore Database
 3. Enable Authentication (Email/Password)
-4. Deploy Firestore rules:
-```bash
-firebase deploy --only firestore:rules
-```
+4. Add your domain to authorized domains
+5. Create Firestore collections: `posts`, `research`, `reviews`, `comments`
 
 ## 🚀 Deployment
 
@@ -74,17 +79,23 @@ firebase deploy --only firestore:rules
 2. Set build command: `npm run build`
 3. Set start command: `npm start`
 4. Add environment variables in Render dashboard
+5. Deploy
 
 ### Vercel Deployment
 1. Connect repository to Vercel
 2. Add environment variables
 3. Deploy automatically
 
+### Netlify Deployment
+1. Connect repository to Netlify
+2. Set build command: `npm run build`
+3. Set publish directory: `.next`
+4. Add environment variables
+5. Deploy
+
 ## 👤 Admin Access
 
-Admin access is configured for: `username@gmail.com`
-
-To change admin email, update `ADMIN_EMAIL` in `src/lib/admin.ts`
+Admin access is configured via the `ADMIN_EMAIL` environment variable.
 
 ## 🎨 Customization
 
@@ -92,70 +103,31 @@ To change admin email, update `ADMIN_EMAIL` in `src/lib/admin.ts`
 - **Fonts**: Update font imports in `src/app/layout.tsx`
 - **Components**: Customize UI components in `src/components/ui/`
 
-## 🤖 AI-Powered Reading Experience
+## 🤖 AI Features
 
-### Text Interaction
-- **Hover Definitions**: Hover over complex words for AI explanations
-- **Text Highlighting**: Select paragraphs/sentences for instant AI analysis
-- **Smart Tooltips**: Context-aware explanations with blue color theme
-- **Draggable Popups**: Move AI explanation cards around the screen
-- **Mobile Touch Support**: Full touch interaction support for smartphones
+### Research Papers
+- **DOI Assignment**: Automatic DOI generation
+- **Version Control**: Track paper revisions
+- **Co-author Management**: Multi-author collaboration
+- **Plagiarism Detection**: AI-powered similarity checking
+- **Reference Validation**: Auto-verify citations
+- **PDF/Word Export**: Download papers in multiple formats
+- **Peer Review System**: Rating and comment system
 
-### Personalized Features
-- **Reading Progress**: Track your reading journey
-- **Smart Recommendations**: AI analyzes your interests for suggestions
-- **Bookmark Intelligence**: AI identifies the most important passages
-- **Vocabulary Building**: Personal glossary with difficulty levels
-- **Export Options**: Download glossaries and bookmarks
-
-### Interactive Elements
-- **Scroll Animations**: Cards appear/disappear as you scroll
-- **Welcome System**: Smart welcome bar with scroll-based hiding
-- **Blinking Buttons**: Animated AI feature buttons for attention
-- **Responsive Design**: Optimized for all screen sizes and devices
+### Reading Experience
+- **Text Interaction**: Hover definitions and highlighting
+- **Smart Summaries**: AI-generated article summaries
+- **Interactive Q&A**: Ask questions about articles
+- **Personalized Recommendations**: AI suggests relevant content
+- **Smart Bookmarks**: AI identifies important passages
 
 ## 📱 Mobile Experience
 
-- **Touch-Friendly**: 44px minimum touch targets for mobile accessibility
-- **Responsive Layout**: Adaptive grid systems and typography
-- **Mobile Navigation**: Collapsible menu with touch interactions
-- **Drag Support**: Touch-enabled dragging for AI popups
-- **Optimized Spacing**: Mobile-first padding and margins
-
-## 📱 Features Overview
-
-### Article System
-- Rich text editor with markdown support
-- Image uploads and media management
-- Categories and tags
-- Book recommendations and references
-- View tracking and analytics
-
-### AI Features
-- **Smart Summaries**: Instant AI-generated article summaries on post cards and pages
-- **Interactive Q&A**: Ask questions about articles and get intelligent answers
-- **Text Highlighting**: Select any text to get AI explanations and references
-- **Real-time Definitions**: Hover over words for instant AI-powered definitions
-- **Reading Recommendations**: AI suggests related articles based on your interests
-- **Smart Bookmarks**: AI identifies and highlights key passages worth saving
-- **Personal Glossary**: AI builds vocabulary from your reading with exportable terms
-- **Reference Finder**: AI finds online URLs for article references
-- **Site Chat Assistant**: AI-powered chatbot for site navigation and content discovery
-- **Content Analysis**: AI explains recent posts and site themes
-
-### Community
-- **Interactive Comments**: Engage in discussions with scroll-reveal animations
-- **AI Chat Assistant**: Get help with site features and content discovery
-- **Recent Posts Analysis**: AI-powered explanations of current content themes
-- **Social Sharing**: Share articles across platforms
-- **Anonymous Reading**: Access all content without registration
-- **Coming Soon**: User profiles and reading groups
-
-### Admin Panel
-- Content management
-- User analytics
-- System statistics
-- Post moderation
+- **Touch-Friendly**: 44px minimum touch targets
+- **Responsive Layout**: Adaptive grid systems
+- **Mobile Navigation**: Collapsible menu
+- **Drag Support**: Touch-enabled interactions
+- **Optimized Spacing**: Mobile-first design
 
 ## 🔗 Links
 
