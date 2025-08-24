@@ -36,6 +36,52 @@ export default function AnalyticsPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [withdrawing, setWithdrawing] = useState(false);
   const [mpesaNumber, setMpesaNumber] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState(0);
+  const [processing, setProcessing] = useState(false);
+  
+  const handleWithdrawal = async () => {
+    if (!user?.uid || !mpesaNumber || withdrawAmount <= 0) return;
+    
+    setProcessing(true);
+    try {
+      const response = await fetch('/api/user/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          amount: withdrawAmount,
+          mpesaNumber,
+          currency: 'KES'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Withdrawal failed');
+      }
+
+      // Update local state
+      setEarnings(prev => ({
+        ...prev,
+        available: prev.available - withdrawAmount
+      }));
+      setTransactions(prev => [{
+        id: Date.now().toString(),
+        type: 'withdrawal',
+        amount: withdrawAmount,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        mpesaNumber
+      }, ...prev]);
+
+      setWithdrawing(false);
+      setMpesaNumber('');
+      setWithdrawAmount(0);
+    } catch (error) {
+      console.error('Error processing withdrawal:', error);
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -45,39 +91,45 @@ export default function AnalyticsPage() {
   }, [user, authLoading]);
 
   const fetchUserData = async () => {
+    if (!user?.email) return;
+
     try {
       const [postsRes, bookmarksRes, recsRes, earningsRes, transactionsRes] = await Promise.all([
-        fetch(`/api/posts/user/${user?.email}`),
-        fetch(`/api/user/bookmarks?userId=${user?.uid}`),
-        fetch(`/api/user/recommendations?userId=${user?.uid}`),
-        fetch(`/api/user/earnings?userId=${user?.uid}`),
-        fetch(`/api/user/transactions?userId=${user?.uid}`)
+        fetch(`/api/posts/user/${user.email}`),
+        fetch(`/api/user/bookmarks?userId=${user.uid}`),
+        fetch(`/api/user/recommendations?userId=${user.uid}`),
+        fetch(`/api/user/earnings?userId=${user.uid}`),
+        fetch(`/api/user/transactions?userId=${user.uid}`)
       ]);
 
-      if (postsRes.ok) {
-        const posts = await postsRes.json();
-        setUserPosts(posts);
-      }
-      
-      if (bookmarksRes.ok) {
-        const bookmarksData = await bookmarksRes.json();
-        setBookmarks(bookmarksData.map((b: any) => b.title || b.content));
-      }
-      
-      if (recsRes.ok) {
-        const recsData = await recsRes.json();
-        setRecommendations(recsData.map((r: any) => r.title || r.topic));
-      }
-      
-      if (earningsRes.ok) {
-        const earningsData = await earningsRes.json();
-        setEarnings(earningsData);
-      }
-      
-      if (transactionsRes.ok) {
-        const transactionsData = await transactionsRes.json();
-        setTransactions(transactionsData);
-      }
+      if (!postsRes.ok) throw new Error('Failed to fetch posts');
+      if (!bookmarksRes.ok) throw new Error('Failed to fetch bookmarks');
+      if (!recsRes.ok) throw new Error('Failed to fetch recommendations');
+      if (!earningsRes.ok) throw new Error('Failed to fetch earnings');
+      if (!transactionsRes.ok) throw new Error('Failed to fetch transactions');
+
+      const [posts, bookmarksData, recsData, earningsData, transactionsData] = await Promise.all([
+        postsRes.json(),
+        bookmarksRes.json(),
+        recsRes.json(),
+        earningsRes.json(),
+        transactionsRes.json()
+      ]);
+
+      setUserPosts(posts);
+      setBookmarks(bookmarksData.map((b: any) => ({
+        id: b.id,
+        title: b.title || b.content?.substring(0, 50),
+        url: `/posts/${b.id}`
+      })));
+      setRecommendations(recsData.map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        category: r.category,
+        score: r.score
+      })));
+      setEarnings(earningsData);
+      setTransactions(transactionsData);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -87,13 +139,24 @@ export default function AnalyticsPage() {
 
   const togglePostLock = async (postId: string, isLocked: boolean) => {
     try {
-      await fetch(`/api/posts/${postId}/lock`, {
+      const response = await fetch(`/api/posts/${postId}/lock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ locked: !isLocked })
       });
-      
-      // Post updated
+
+      if (!response.ok) {
+        throw new Error('Failed to update post lock status');
+      }
+
+      // Update local state
+      setUserPosts(posts => 
+        posts.map(post => 
+          post.id === postId 
+            ? { ...post, locked: !isLocked }
+            : post
+        )
+      );
     } catch (error) {
       console.error('Error toggling post lock:', error);
     }

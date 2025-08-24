@@ -9,8 +9,29 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', user?.email);
+      
+      if (user) {
+        const token = await user.getIdToken();
+        console.log('User ID token:', token);
+      }
+      
       setUser(user);
+      
+      if (user) {
+        try {
+          // Initialize user collections when user signs in
+          await fetch('/api/user/init', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.uid })
+          });
+        } catch (error) {
+          console.error('Error initializing user collections:', error);
+        }
+      }
+      
       setLoading(false);
     });
 

@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
         aiModel: {
           provider: 'deepseek',
           model: 'deepseek-chat',
-          apiKey: '',
-          enabled: false
+          apiKey: process.env.DEEPSEEK_API_KEY || '',
+          enabled: Boolean(process.env.DEEPSEEK_API_KEY)
         }
       });
     }

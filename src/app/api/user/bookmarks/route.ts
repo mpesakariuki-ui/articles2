@@ -1,23 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminAuth, adminDb } from '@/lib/admin';
+import { headers } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
+    // Get auth token from header
+    const headersList = await headers();
+    const authHeader = headersList.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'No authorization token' }, { status: 401 });
+    }
+    
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+    if (!userId || userId !== decodedToken.uid) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 403 });
     }
 
-    const bookmarksQuery = query(
-      collection(db, 'userBookmarks'),
-      where('userId', '==', userId)
-    );
-
-    const querySnapshot = await getDocs(bookmarksQuery);
-    const bookmarks = querySnapshot.docs.map(doc => ({
+    const bookmarksRef = adminDb.collection('users').doc(userId).collection('bookmarks');
+    const querySnapshot = await bookmarksRef.get();
+    const bookmarks = querySnapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     }));

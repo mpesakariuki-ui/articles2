@@ -24,33 +24,34 @@ export async function getUserAIConfig(userId: string): Promise<AIModelConfig | n
   }
 }
 
+const DEFAULT_AI_CONFIG: AIModelConfig = {
+  provider: 'deepseek',
+  model: 'deepseek-chat',
+  apiKey: process.env.DEEPSEEK_API_KEY || '',
+  enabled: true
+};
+
 export async function callCustomAI(
   prompt: string, 
   userId: string, 
   fallbackFunction: () => Promise<any>
 ): Promise<any> {
   try {
-    // Try system DeepSeek API key first if available
-    if (process.env.DEEPSEEK_API_KEY) {
-      try {
-        return await callDeepSeek(prompt, {
-          provider: 'deepseek',
-          model: 'deepseek-chat',
-          apiKey: process.env.DEEPSEEK_API_KEY,
-          enabled: true
-        });
-      } catch (error) {
-        // Fall through to user config
-      }
-    }
-    
     if (!userId) {
+      // Use default DeepSeek config for unauthenticated users
+      if (DEFAULT_AI_CONFIG.apiKey) {
+        return await callDeepSeek(prompt, DEFAULT_AI_CONFIG);
+      }
       return 'AI feature unavailable - please sign in to use custom models.';
     }
     
-    const aiConfig = await getUserAIConfig(userId);
+    const userConfig = await getUserAIConfig(userId);
+    const aiConfig = userConfig || DEFAULT_AI_CONFIG;
     
-    if (!aiConfig || !aiConfig.enabled || !aiConfig.apiKey) {
+    if (!aiConfig.enabled || !aiConfig.apiKey) {
+      if (DEFAULT_AI_CONFIG.apiKey) {
+        return await callDeepSeek(prompt, DEFAULT_AI_CONFIG);
+      }
       return 'AI feature unavailable - please configure your AI model in settings.';
     }
     

@@ -41,7 +41,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Clock } from 'lucide-react';
-import { checkAdminAccess } from '@/lib/admin';
+import { checkAdminAccess } from '@/lib/client-admin';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -178,20 +178,39 @@ export function PostView({ post }: { post: Post }) {
                 Edit
               </Button>
               <Button variant="outline" size="sm" onClick={async () => {
-                if (confirm('Are you sure you want to delete this post?')) {
-                  try {
-                    const response = await fetch(`/api/posts/${post.id}`, { method: 'DELETE' });
-                    if (response.ok) {
-                      // Clear cache to refresh posts
-                      await fetch('/api/posts/cache', { method: 'DELETE' });
-                      toast({ title: 'Post deleted successfully' });
-                      router.push('/posts');
-                    } else {
-                      toast({ title: 'Failed to delete post', variant: 'destructive' });
+                if (!user || !confirm('Are you sure you want to delete this post?')) {
+                  return;
+                }
+
+                try {
+                  const token = await user.getIdToken();
+                  const response = await fetch(`/api/posts/${post.id}`, { 
+                    method: 'DELETE',
+                    headers: {
+                      'Authorization': `Bearer ${token}`
                     }
-                  } catch (error) {
-                    toast({ title: 'Error deleting post', variant: 'destructive' });
+                  });
+                    
+                  if (response.ok) {
+                    // Clear cache to refresh posts
+                    await fetch('/api/posts/cache', { method: 'DELETE' });
+                    toast({ title: 'Post deleted successfully' });
+                    router.push('/posts');
+                  } else {
+                    const data = await response.json();
+                    toast({ 
+                      title: 'Failed to delete post', 
+                      description: data.error || 'An error occurred',
+                      variant: 'destructive' 
+                    });
                   }
+                } catch (error) {
+                  console.error('Error deleting post:', error);
+                  toast({ 
+                    title: 'Error deleting post',
+                    description: error instanceof Error ? error.message : 'An error occurred',
+                    variant: 'destructive' 
+                  });
                 }
               }}>
                 <Trash2 className="h-4 w-4 mr-1" />

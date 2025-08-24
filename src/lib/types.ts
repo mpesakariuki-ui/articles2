@@ -42,6 +42,9 @@ export interface Post {
   lectures: Lecture[];
   references?: string[];
   views?: number;
+  locked?: boolean;
+  isPremium?: boolean;
+  earnings?: number;
 }
 
 export interface ResearchPaper {

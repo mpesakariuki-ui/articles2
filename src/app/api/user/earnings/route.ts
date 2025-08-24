@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminAuth, adminDb } from '@/lib/admin';
+import { headers } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
+    // Get auth token from header
+    const headersList = await headers();
+    const authHeader = headersList.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'No authorization token' }, { status: 401 });
+    }
+    
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+    if (!userId || userId !== decodedToken.uid) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 403 });
     }
 
-    const earningsQuery = query(
-      collection(db, 'userEarnings'),
-      where('userId', '==', userId)
-    );
-
-    const querySnapshot = await getDocs(earningsQuery);
+    const earningsRef = adminDb.collection('users').doc(userId).collection('earnings');
+    const querySnapshot = await earningsRef.get();
     
     if (querySnapshot.empty) {
       return NextResponse.json({ total: 0, available: 0, pending: 0 });

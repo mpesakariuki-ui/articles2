@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { addPost, getPosts } from '@/lib/firestore';
 import { dataCache } from '@/lib/cache';
 import type { Book, Lecture, Post, User } from '@/lib/types';
+import { headers } from 'next/headers';
+import { adminAuth, adminDb } from '@/lib/admin';
 
 interface CreatePostBody {
   title: string;
@@ -18,6 +19,40 @@ interface CreatePostBody {
 
 export async function POST(request: NextRequest) {
   try {
+    // Get auth token from header
+    const headersList = await headers();
+    const authHeader = headersList.get('authorization');
+    console.log('Authorization header:', authHeader);
+
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.log('No Bearer token found');
+      return NextResponse.json({ error: 'No authorization token' }, { status: 401 });
+    }
+    
+    const token = authHeader.split('Bearer ')[1];
+    console.log('Token:', token);
+    
+    // Verify and decode token
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    console.log('Decoded token:', decodedToken);
+    console.log('Admin claim:', decodedToken.admin);
+    console.log('Email:', decodedToken.email);
+    
+    // Check if user has admin email
+    if (decodedToken.email !== 'jamexkarix583@gmail.com') {
+      console.log('User is not an admin');
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
+    // Get user data
+    const userDoc = await adminDb.collection('users').doc(decodedToken.uid).get();
+    const userData = userDoc.data();
+    console.log('User data:', userData);
+    
+    if (!userData) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const body = await request.json() as CreatePostBody;
     const { title, content, description, category, tags, coverImage, subtopic, bookRecommendations, lectures, references } = body;
 
@@ -32,10 +67,10 @@ export async function POST(request: NextRequest) {
       tags: tags || [],
       excerpt: description || content.substring(0, 150) + (content.length > 150 ? '...' : ''),
       author: {
-        id: 'kariuki-james',
-        name: 'Kariuki James',
-        avatarUrl: 'https://placehold.co/100x100.png',
-        email: 'kariuki@example.com'
+        id: decodedToken.uid,
+        name: userData.displayName || decodedToken.name || 'Anonymous',
+        avatarUrl: userData.photoURL || 'https://placehold.co/100x100.png',
+        email: decodedToken.email || 'anonymous@example.com' // Fallback email to satisfy type
       },
       createdAt: new Date().toISOString(),
       comments: [],
@@ -57,7 +92,8 @@ export async function POST(request: NextRequest) {
       views: 0,
     };
 
-    const postId = await addPost(newPost);
+    const postRef = await adminDb.collection('posts').add(newPost);
+    const postId = postRef.id;
     
     // Clear posts cache when new post is added
     dataCache.clear();
@@ -78,7 +114,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch from database if not cached
-    const posts = await getPosts();
+    const querySnapshot = await adminDb.collection('posts').get();
+    const posts = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     if (!Array.isArray(posts)) {
       console.error('Posts is not an array:', posts);
       return NextResponse.json({ posts: [] });

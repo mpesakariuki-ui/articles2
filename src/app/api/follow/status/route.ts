@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,9 +12,9 @@ export async function GET(request: NextRequest) {
     }
 
     const followId = `${userId}_${authorId}`;
-    const followDoc = await getDoc(doc(db, 'follows', followId));
+    const followDoc = await adminDb.collection('follows').doc(followId).get();
 
-    return NextResponse.json({ isFollowing: followDoc.exists() });
+    return NextResponse.json({ isFollowing: followDoc.exists });
   } catch (error) {
     console.error('Error checking follow status:', error);
     return NextResponse.json({ isFollowing: false });

@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { DraftSystem } from '@/components/post/draft-system';
-import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link, Sparkles, Wand2, Tags } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Minus, Pilcrow, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link, Sparkles, Wand2, Tags, Table } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/use-auth';
 
 export function PostEditor() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,6 +25,7 @@ export function PostEditor() {
   const [tags, setTags] = useState('');
   const { toast } = useToast();
   const router = useRouter();
+  const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const formData = { title: '', content, category: '', tags: '' };
@@ -34,6 +36,21 @@ export function PostEditor() {
     setBookRecs(data.bookRecs || '');
     setLectures(data.lectures || '');
     setReferences(data.references || '');
+  };
+
+  const insertTable = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const tableTemplate = `
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+`;
+    const newContent = content.substring(0, start) + tableTemplate + content.substring(start);
+    setContent(newContent);
   };
 
   const applyFormat = (format: string, isBlock = false) => {
@@ -309,10 +326,23 @@ export function PostEditor() {
       });
     }
 
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be signed in to create a post.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      const token = await user.getIdToken();
       const response = await fetch('/api/posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           title, 
           content, 
@@ -400,6 +430,9 @@ export function PostEditor() {
                   </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={insertNumberedList} title="Numbered List">
                     <ListOrdered className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={insertTable} title="Insert Table">
+                    <Table className="h-4 w-4" />
                   </Button>
                   <Separator orientation="vertical" className="h-6 mx-1" />
                   <Button type="button" variant="ghost" size="sm" onClick={insertImage} title="Insert Image">

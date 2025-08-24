@@ -1,69 +1,141 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Posts - read public, write authenticated
-    match /posts/{postId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
     }
     
-    // Research papers - read public, write/delete only by author
-    match /research/{paperId} {
-      allow read: if true;
-      allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.authorId;
-      allow update, delete: if request.auth != null && 
-        (request.auth.uid == resource.data.authorId || 
-         request.auth.token.email == resource.data.authors[0]);
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Comments - read public, write authenticated
-    match /comments/{commentId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Users - read/write own data only
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Reading progress - authenticated users can write their own progress
-    match /readingProgress/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // Comments - public read, authenticated write
-    match /comments/{commentId} {
-      allow read: if true;
-      allow write: if true;
-    }
-    
-    // User settings - temporary open access
-    match /userSettings/{document=**} {
-      allow read, write: if true;
-    }
-    
-    // User preferences - authenticated users can read/write any user preferences
-    match /userPreferences/{userId} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // Admin collections - admin only
-    match /admins/{adminId} {
-      allow read, write: if request.auth != null && 
+    function isAdmin() {
+      return isSignedIn() && 
         request.auth.token.email in ['jamexkarix583@gmail.com'];
     }
-    
-    // Research versions and reviews
-    match /research/{paperId}/versions/{versionId} {
+
+    // Posts - read public, write authenticated or admin
+    match /posts/{postId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if isSignedIn() && (request.auth.uid == request.resource.data.author.id || isAdmin());
+      allow update, delete: if isSignedIn() && 
+        (resource.data.author.id == request.auth.uid || isAdmin());
     }
     
-    match /research/{paperId}/reviews/{reviewId} {
+    // User document and subcollections are now defined in /users/{userId} block above
+
+    // User document and subcollections
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && request.auth.uid == userId;
+
+      match /bookmarks/{bookmarkId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow write: if isSignedIn() && request.auth.uid == userId;
+      }
+      
+      match /recommendations/{recId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow write: if isSignedIn() && request.auth.uid == userId;
+      }
+      
+      match /transactions/{transactionId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow write: if isSignedIn() && request.auth.uid == userId;
+      }
+      
+      match /earnings/{earningId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow write: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    // Reading Progress
+    match /readingProgress/{progressId} {
+      allow read: if isSignedIn() && progressId.split('_')[0] == request.auth.uid;
+      allow write: if isSignedIn() && progressId.split('_')[0] == request.auth.uid;
+    }
+
+    // Follows
+    match /follows/{followId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isSignedIn() && followId.split('_')[0] == request.auth.uid;
+    }
+    
+    // User recommendations
+    match /userRecommendations/{recommendationId} {
+      allow read: if isSignedIn() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn();
+    }
+
+    // User earnings
+    match /userEarnings/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // M-Pesa transactions
+    match /mpesa_transactions/{transactionId} {
+      allow read: if isSignedIn() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+    }
+
+    // User reading history
+    match /userReadingHistory/{historyId} {
+      allow read: if isSignedIn() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+    }
+
+    // User preferences (including AI settings)
+    match /userPreferences/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+    }
+
+    // User settings
+    match /userSettings/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+
+    // Admin access
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Research papers and related collections
+    match /research/{paperId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && 
+        (resource.data.authorId == request.auth.uid || isAdmin());
+
+      match /versions/{versionId} {
+        allow read: if true;
+        allow write: if isSignedIn() && 
+          (get(/databases/$(database)/documents/research/$(paperId)).data.authorId == request.auth.uid || isAdmin());
+      }
+
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
     }
   }
 }

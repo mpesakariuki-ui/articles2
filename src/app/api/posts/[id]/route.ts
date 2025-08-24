@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb, adminAuth } from '@/lib/admin';
 
 export async function GET(
   request: NextRequest,
@@ -9,10 +8,9 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const postRef = doc(db, 'posts', id);
-    const postDoc = await getDoc(postRef);
+    const postDoc = await adminDb.collection('posts').doc(id).get();
     
-    if (!postDoc.exists()) {
+    if (!postDoc.exists) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
     
@@ -31,8 +29,7 @@ export async function PUT(
     const { id } = await params;
     const updates = await request.json();
     
-    const postRef = doc(db, 'posts', id);
-    await updateDoc(postRef, {
+    await adminDb.collection('posts').doc(id).update({
       ...updates,
       updatedAt: new Date().toISOString()
     });
@@ -50,9 +47,27 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const headersList = request.headers;
+    const authHeader = headersList.get('authorization');
+
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'No authorization token' }, { status: 401 });
+    }
     
-    const postRef = doc(db, 'posts', id);
-    await deleteDoc(postRef);
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+
+    // Check if user is admin
+    if (decodedToken.email !== 'jamexkarix583@gmail.com') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
+    const postDoc = await adminDb.collection('posts').doc(id).get();
+    if (!postDoc.exists) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+    
+    await adminDb.collection('posts').doc(id).delete();
     
     // Clear cache to refresh homepage and recent posts
     try {
