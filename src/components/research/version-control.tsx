@@ -29,10 +29,15 @@ export function VersionControl({ paperId }: VersionControlProps) {
   const fetchVersions = async () => {
     try {
       const response = await fetch(`/api/research/${paperId}/versions`);
+      if (!response.ok) {
+        setVersions([]);
+        return;
+      }
       const data = await response.json();
       setVersions(data.versions || []);
     } catch (error) {
       console.error('Error fetching versions:', error);
+      setVersions([]);
     }
   };
 

@@ -17,17 +17,19 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const timeRange = url.searchParams.get('timeRange') || 'week';
 
-    // Get analytics overview
-    const analyticsRef = doc(db, 'analytics', 'overview');
-    const analyticsSnap = await getDoc(analyticsRef);
+    // Get posts count
+    const postsSnap = await getDocs(collection(db, 'posts'));
+    const totalPosts = postsSnap.size;
+    const totalViews = postsSnap.docs.reduce((sum, doc) => sum + (doc.data().views || 0), 0);
+    const totalComments = postsSnap.docs.reduce((sum, doc) => sum + (doc.data().comments?.length || 0), 0);
 
-    // If analytics don't exist, create default data
-    let analyticsData = analyticsSnap.exists() ? analyticsSnap.data() : {
+    // Create analytics data from actual posts
+    let analyticsData = {
       overview: {
-        totalPosts: 0,
+        totalPosts,
         totalUsers: 0,
-        totalViews: 0,
-        totalComments: 0
+        totalViews,
+        totalComments
       },
       userAnalytics: {
         timeRange: 'week',
@@ -40,19 +42,13 @@ export async function GET(request: Request) {
         data: [],
         topPosts: [],
         engagement: {
-          totalViews: 0,
-          totalComments: 0
+          totalViews,
+          totalComments
         }
       }
     };
 
-    // Get latest posts for the time range
-    const postsQuery = query(
-      collection(db, 'posts'),
-      orderBy('createdAt', 'desc'),
-      limit(10)
-    );
-    const postsSnap = await getDocs(postsQuery);
+    // Use already fetched posts
     const posts = postsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Post[];
 
     // Update analytics data with latest information

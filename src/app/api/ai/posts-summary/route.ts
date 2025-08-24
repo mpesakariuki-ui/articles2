@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callCustomAI } from '@/lib/ai-config';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { posts } = await request.json();
+    const { posts, userId } = await request.json();
     
     if (!posts || posts.length === 0) {
       return NextResponse.json({ summary: 'No posts available to summarize.' });
     }
-    
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
     const postsText = posts.map((post: any) => 
       `Title: ${post.title}\nCategory: ${post.category}\nExcerpt: ${post.excerpt}`
@@ -28,8 +27,11 @@ Provide a concise summary (2-3 sentences) highlighting:
 
 Keep it conversational and engaging.`;
 
-    const result = await model.generateContent(prompt);
-    const summary = result.response.text().trim();
+    const summary = await callCustomAI(prompt, userId, async () => {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
     
     return NextResponse.json({ summary });
   } catch (error) {

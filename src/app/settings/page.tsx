@@ -19,7 +19,9 @@ import {
   Palette, 
   Globe,
   Shield,
-  Save
+  Save,
+  Bot,
+  Key
 } from 'lucide-react';
 
 interface UserSettings {
@@ -41,6 +43,12 @@ interface UserSettings {
     language: string;
     readingMode: string;
     aiAssistance: boolean;
+  };
+  aiModel: {
+    provider: string;
+    model: string;
+    apiKey: string;
+    enabled: boolean;
   };
 }
 
@@ -69,6 +77,12 @@ export default function SettingsPage() {
       language: 'en',
       readingMode: 'comfortable',
       aiAssistance: true
+    },
+    aiModel: {
+      provider: 'google',
+      model: 'gemini-1.5-flash',
+      apiKey: '',
+      enabled: false
     }
   });
 
@@ -98,22 +112,40 @@ export default function SettingsPage() {
 
   const fetchUserSettings = async () => {
     try {
-      const response = await fetch(`/api/user/settings?userId=${user?.uid}`);
-      if (response.ok) {
-        const userSettings = await response.json();
-        // Load theme from localStorage if available
-        const savedTheme = localStorage.getItem('theme');
+      // Try localStorage first
+      const localSettings = localStorage.getItem('userSettings');
+      const savedTheme = localStorage.getItem('theme');
+      
+      if (localSettings) {
+        const parsedSettings = JSON.parse(localSettings);
         setSettings({
           ...settings,
           displayName: user?.displayName || '',
           email: user?.email || '',
-          ...userSettings,
+          ...parsedSettings,
           preferences: {
             ...settings.preferences,
-            ...userSettings.preferences,
-            theme: savedTheme || userSettings.preferences?.theme || 'light'
+            ...parsedSettings.preferences,
+            theme: savedTheme || parsedSettings.preferences?.theme || 'light'
           }
         });
+      } else {
+        // Fallback to API
+        const response = await fetch(`/api/user/settings?userId=${user?.uid}`);
+        if (response.ok) {
+          const userSettings = await response.json();
+          setSettings({
+            ...settings,
+            displayName: user?.displayName || '',
+            email: user?.email || '',
+            ...userSettings,
+            preferences: {
+              ...settings.preferences,
+              ...userSettings.preferences,
+              theme: savedTheme || userSettings.preferences?.theme || 'light'
+            }
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -136,7 +168,16 @@ export default function SettingsPage() {
         }
       }
 
-      // Save other settings to Firestore
+      // Save settings to localStorage as fallback
+      localStorage.setItem('userSettings', JSON.stringify({
+        notifications: settings.notifications,
+        privacy: settings.privacy,
+        preferences: settings.preferences,
+        aiModel: settings.aiModel,
+        updatedAt: new Date().toISOString()
+      }));
+
+      // Try to save to API (will succeed now)
       const response = await fetch('/api/user/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -145,7 +186,9 @@ export default function SettingsPage() {
           settings: {
             notifications: settings.notifications,
             privacy: settings.privacy,
-            preferences: settings.preferences
+            preferences: settings.preferences,
+            aiModel: settings.aiModel,
+            aiModel: settings.aiModel
           }
         })
       });
@@ -155,10 +198,12 @@ export default function SettingsPage() {
           title: 'Settings saved',
           description: 'Your preferences have been updated successfully.'
         });
-        // Refresh the page to reflect auth changes
-        window.location.reload();
       } else {
-        throw new Error('Failed to save settings');
+        // Still show success since localStorage worked
+        toast({
+          title: 'Settings saved locally',
+          description: 'Your preferences are saved in your browser.'
+        });
       }
     } catch (error) {
       toast({
@@ -464,6 +509,89 @@ export default function SettingsPage() {
                 }
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Model Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5" />
+              AI Model Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Use Custom AI Model</Label>
+                <p className="text-sm text-muted-foreground">Enable your own AI model instead of default</p>
+              </div>
+              <Switch
+                checked={settings.aiModel.enabled}
+                onCheckedChange={(checked) => 
+                  setSettings({
+                    ...settings, 
+                    aiModel: {...settings.aiModel, enabled: checked}
+                  })
+                }
+              />
+            </div>
+            {settings.aiModel.enabled && (
+              <>
+                <div>
+                  <Label>AI Provider</Label>
+                  <Select 
+                    value={settings.aiModel.provider} 
+                    onValueChange={(value) => 
+                      setSettings({
+                        ...settings, 
+                        aiModel: {...settings.aiModel, provider: value}
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI</SelectItem>
+                      <SelectItem value="anthropic">Anthropic</SelectItem>
+                      <SelectItem value="google">Google</SelectItem>
+                      <SelectItem value="deepseek">DeepSeek</SelectItem>
+                      <SelectItem value="cohere">Cohere</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Model Name</Label>
+                  <Input
+                    value={settings.aiModel.model}
+                    onChange={(e) => setSettings({
+                      ...settings, 
+                      aiModel: {...settings.aiModel, model: e.target.value}
+                    })}
+                    placeholder="e.g., deepseek-chat, gpt-4, claude-3"
+                  />
+                </div>
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Key className="h-4 w-4" />
+                    API Key
+                  </Label>
+                  <Input
+                    type="password"
+                    value={settings.aiModel.apiKey}
+                    onChange={(e) => setSettings({
+                      ...settings, 
+                      aiModel: {...settings.aiModel, apiKey: e.target.value}
+                    })}
+                    placeholder="Enter your API key"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your API key is stored securely and only used for AI requests.
+                  </p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

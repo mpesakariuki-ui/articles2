@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import type { Post } from '@/lib/types';
 import { Clock, Sparkles } from 'lucide-react';
 
 export function RecentPosts() {
+  const { user } = useAuth();
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
   const [showExplanation, setShowExplanation] = useState(false);
   const [explanation, setExplanation] = useState('');
@@ -29,7 +31,10 @@ export function RecentPosts() {
       const response = await fetch('/api/ai/explain-recent-posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ posts: recentPosts.map(p => ({ title: p.title, category: p.category, excerpt: p.excerpt })) })
+        body: JSON.stringify({ 
+          posts: recentPosts.map(p => ({ title: p.title, category: p.category, excerpt: p.excerpt })),
+          userId: user?.uid
+        })
       });
       
       const data = await response.json();

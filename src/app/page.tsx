@@ -61,7 +61,8 @@ export default function Home() {
             title: post.title,
             excerpt: post.excerpt,
             category: post.category
-          }))
+          })),
+          userId: user?.uid
         })
       });
       

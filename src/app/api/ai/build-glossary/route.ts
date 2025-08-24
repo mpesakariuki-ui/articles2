@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callCustomAI } from '@/lib/ai-config';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, title } = await request.json();
-    
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const { content, title, userId } = await request.json();
     
     const prompt = `Extract 5 key terms from this article and create a glossary:
 
@@ -22,8 +21,11 @@ For each term, provide:
 
 Format as JSON array with objects containing: term, definition, context, difficulty`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text().trim();
+    const responseText = await callCustomAI(prompt, userId, async () => {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
     
     // Try to extract JSON from the response
     let terms = [];

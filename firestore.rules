@@ -1,9 +1,63 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Development mode - allow all operations
-    match /{document=**} {
+    // Posts - read public, write authenticated
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Research papers - read public, write/delete only by author
+    match /research/{paperId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.authorId;
+      allow update, delete: if request.auth != null && 
+        (request.auth.uid == resource.data.authorId || 
+         request.auth.token.email == resource.data.authors[0]);
+    }
+    
+    // Comments - read public, write authenticated
+    match /comments/{commentId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Users - read/write own data only
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Reading progress - authenticated users can write their own progress
+    match /readingProgress/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // User settings - temporary open access
+    match /userSettings/{document=**} {
       allow read, write: if true;
+    }
+    
+    // User preferences - authenticated users can read/write any user preferences
+    match /userPreferences/{userId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Admin collections - admin only
+    match /admins/{adminId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['jamexkarix583@gmail.com'];
+    }
+    
+    // Research versions and reviews
+    match /research/{paperId}/versions/{versionId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    match /research/{paperId}/reviews/{reviewId} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
   }
 }

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callCustomAI } from '@/lib/ai-config';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { content } = await request.json();
-    
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const { content, userId } = await request.json();
     
     const prompt = `As a professional editor, review this text for grammar, style, and clarity:
 
@@ -22,8 +21,11 @@ Provide feedback on:
 
 Be specific and constructive in your feedback.`;
 
-    const result = await model.generateContent(prompt);
-    const feedback = result.response.text().trim();
+    const feedback = await callCustomAI(prompt, userId, async () => {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
     
     return NextResponse.json({ feedback });
   } catch (error) {

@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callCustomAI } from '@/lib/ai-config';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { word } = await request.json();
-    
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const { word, userId } = await request.json();
     
     const prompt = `Provide a brief, clear definition of the word "${word}" in 1-2 sentences. Keep it simple and easy to understand.`;
 
-    const result = await model.generateContent(prompt);
-    const definition = result.response.text().trim();
+    const definition = await callCustomAI(prompt, userId, async () => {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
     
     return NextResponse.json({ definition });
   } catch (error) {

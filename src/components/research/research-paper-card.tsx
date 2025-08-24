@@ -14,6 +14,7 @@ interface ResearchPaper {
   createdAt: string;
   citations: number;
   downloads: number;
+  thumbnail?: string;
 }
 
 interface ResearchPaperCardProps {
@@ -23,6 +24,15 @@ interface ResearchPaperCardProps {
 export function ResearchPaperCard({ paper }: ResearchPaperCardProps) {
   return (
     <Card className="h-full flex flex-col">
+      {paper.thumbnail && (
+        <div className="aspect-video relative overflow-hidden rounded-t-lg">
+          <img 
+            src={paper.thumbnail} 
+            alt={paper.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
       <CardHeader>
         <div className="flex items-start gap-2 mb-2">
           <FileText className="h-5 w-5 text-primary mt-1 flex-shrink-0" />

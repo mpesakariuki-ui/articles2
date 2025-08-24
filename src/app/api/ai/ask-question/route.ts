@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callCustomAI } from '@/lib/ai-config';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, title, question } = await request.json();
-    
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const { content, title, question, userId } = await request.json();
     
     const prompt = `Based on this article titled "${title}":
 
@@ -17,8 +16,11 @@ Answer this question: ${question}
 
 Provide a clear, concise answer based on the article content:`;
 
-    const result = await model.generateContent(prompt);
-    const answer = result.response.text().trim();
+    const answer = await callCustomAI(prompt, userId, async () => {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
     
     return NextResponse.json({ answer });
   } catch (error) {

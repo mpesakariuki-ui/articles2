@@ -24,7 +24,7 @@ import { SocialShare } from '@/components/post/social-share';
 import { TableOfContents } from '@/components/post/table-of-contents';
 import { RelatedPosts } from '@/components/post/related-posts';
 import { FunctionalComments } from '@/components/post/functional-comments';
-import { AIFeaturesModal } from '@/components/post/ai-features-modal';
+import { AISidebar } from '@/components/post/ai-sidebar';
 import { SmartText } from '@/components/post/smart-text';
 import { ReadingRecommendations } from '@/components/post/reading-recommendations';
 import { SmartBookmarks } from '@/components/post/smart-bookmarks';
@@ -48,7 +48,6 @@ import { useToast } from '@/hooks/use-toast';
 import { pageview, event } from '@/lib/analytics';
 
 export function PostView({ post }: { post: Post }) {
-  const [showAIModal, setShowAIModal] = useState(false);
   const [showReferencesModal, setShowReferencesModal] = useState(false);
   const [hideMetadata, setHideMetadata] = useState(false);
   const { user } = useAuth();
@@ -66,12 +65,36 @@ export function PostView({ post }: { post: Post }) {
     pageview(`/posts/${post.id}`);
     event('page_view', 'post', post.title);
     
+    let lastScrollY = window.scrollY;
+    
     const handleScroll = () => {
-      setHideMetadata(window.scrollY > 200);
+      const currentScrollY = window.scrollY;
+      const header = document.querySelector('header');
+      
+      setHideMetadata(currentScrollY > 200);
+      
+      if (header) {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          // Scrolling down - hide header
+          header.style.transform = 'translateY(-100%)';
+        } else {
+          // Scrolling up - show header
+          header.style.transform = 'translateY(0)';
+        }
+      }
+      
+      lastScrollY = currentScrollY;
     };
     
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      // Reset header position on cleanup
+      const header = document.querySelector('header');
+      if (header) {
+        header.style.transform = 'translateY(0)';
+      }
+    };
   }, [post.id, post.title]);
 
 
@@ -84,7 +107,9 @@ export function PostView({ post }: { post: Post }) {
   const isLongPost = post.content.split(' ').length > 150;
 
   return (
-    <article className="container max-w-4xl py-4 md:py-8 lg:py-12 px-4">
+    <div className="relative flex">
+      <AISidebar articleContent={post.content} articleTitle={post.title} />
+      <article className="flex-1 mx-auto max-w-4xl py-4 md:py-8 lg:py-12 px-4">
       <div className="space-y-4 text-center mb-12">
         <Badge variant="outline">{post.category}</Badge>
         <h1 className="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tighter px-2">
@@ -150,12 +175,7 @@ export function PostView({ post }: { post: Post }) {
         </div>
       </div>
       
-      <div className="flex justify-center mb-6 md:mb-8">
-        <Button variant="secondary" onClick={() => setShowAIModal(true)} className="animate-pulse touch-manipulation min-h-[44px]">
-          <Sparkles className="mr-2 h-4 w-4" />
-          AI Features
-        </Button>
-      </div>
+
 
       <TableOfContents content={post.content} />
 
@@ -273,30 +293,11 @@ export function PostView({ post }: { post: Post }) {
         <FollowAuthor authorId={post.author.id} authorName={post.author.name} />
       </div>
       
-      <ReadingRecommendations currentPost={post} />
-      
-      <SmartBookmarks content={post.content} title={post.title} />
-      
-      <PersonalGlossary content={post.content} title={post.title} />
-      
       <RelatedPosts currentPost={post} />
       
       <FunctionalComments post={post} />
 
-      <AIFeaturesModal 
-        isOpen={showAIModal}
-        onClose={() => setShowAIModal(false)}
-        articleContent={post.content}
-        articleTitle={post.title}
-        features={[
-          { id: 'summarize', name: 'Summarize', description: 'Get a concise summary of this article', icon: 'FileText' },
-          { id: 'explain', name: 'Explain Concepts', description: 'Get explanations of key concepts', icon: 'HelpCircle' },
-          { id: 'questions', name: 'Discussion Questions', description: 'Generate questions for deeper thinking', icon: 'MessageSquare' },
-          { id: 'quiz', name: 'Quick Quiz', description: 'Test your understanding', icon: 'Brain' },
-          { id: 'keypoints', name: 'Key Points', description: 'Extract main points and highlights', icon: 'Target' },
-          { id: 'related', name: 'Related Topics', description: 'Find related topics to explore', icon: 'BookOpen' }
-        ]}
-      />
+
       
       <ReferencesModal 
         isOpen={showReferencesModal}
@@ -304,5 +305,6 @@ export function PostView({ post }: { post: Post }) {
         references={post.references || []}
       />
     </article>
+    </div>
   );
 }

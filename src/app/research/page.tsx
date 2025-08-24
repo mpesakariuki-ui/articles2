@@ -37,13 +37,16 @@ export default function ResearchPage() {
       <div className="text-center mb-8">
         <h1 className="font-headline text-4xl font-bold mb-2">Research Papers</h1>
         <p className="text-muted-foreground">Academic research and scientific publications</p>
-        
-        <div className="mt-6 max-w-md mx-auto">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h3 className="font-semibold text-yellow-800 mb-2">Coming Soon</h3>
-            <p className="text-sm text-yellow-700">Research papers feature is currently under development. Stay tuned!</p>
+        {user && (
+          <div className="mt-4">
+            <Button asChild>
+              <Link href="/research/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Submit Research Paper
+              </Link>
+            </Button>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

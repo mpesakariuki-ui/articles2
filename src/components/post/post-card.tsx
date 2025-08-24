@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/use-auth';
 import {
   Card,
   CardContent,
@@ -24,6 +25,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, minimal = false }: PostCardProps) {
+  const { user } = useAuth();
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ export function PostCard({ post, minimal = false }: PostCardProps) {
       const response = await fetch('/api/ai/post-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId: post.id, content: post.content, title: post.title })
+        body: JSON.stringify({ postId: post.id, content: post.content, title: post.title, userId: user?.uid })
       });
       
       const data = await response.json();

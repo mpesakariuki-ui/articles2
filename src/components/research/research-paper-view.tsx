@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Download, FileText, Quote, Star, MessageSquare } from 'lucide-react';
+import { Download, FileText, Quote, Star, MessageSquare, Edit, Trash2 } from 'lucide-react';
 import { ExportModal } from './export-modal';
 import { CitationModal } from './citation-modal';
 import { PeerReviewModal } from './peer-review-modal';
@@ -29,12 +30,50 @@ interface ResearchPaper {
   createdAt: string;
   citations: number;
   downloads: number;
+  authorId?: string;
 }
 
 export function ResearchPaperView({ paper }: { paper: ResearchPaper }) {
   const [showExport, setShowExport] = useState(false);
   const [showCitation, setShowCitation] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const { user } = useAuth();
+
+  const handleEdit = () => {
+    window.location.href = `/research/edit/${paper.id}`;
+  };
+
+  const handleDelete = async () => {
+    if (confirm('Are you sure you want to delete this research paper?')) {
+      try {
+        const response = await fetch(`/api/research/${paper.id}`, {
+          method: 'DELETE'
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          alert('Paper deleted successfully');
+          window.location.href = '/research';
+        } else {
+          alert('Failed to delete paper: ' + (result.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error deleting paper:', error);
+        alert('Error deleting paper');
+      }
+    }
+  };
+
+  const isAuthor = user && (
+    user.uid === paper.authorId || 
+    user.email === paper.authors[0] ||
+    user.email === 'jamexkarix583@gmail.com' // Admin override
+  );
+  
+  console.log('Current user:', user);
+  console.log('Paper authorId:', paper.authorId);
+  console.log('Paper authors:', paper.authors);
+  console.log('User email:', user?.email);
+  console.log('Is author check:', isAuthor);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -69,6 +108,18 @@ export function ResearchPaperView({ paper }: { paper: ResearchPaper }) {
             <Star className="h-4 w-4 mr-2" />
             Review
           </Button>
+          {isAuthor && (
+            <>
+              <Button variant="outline" onClick={handleEdit}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

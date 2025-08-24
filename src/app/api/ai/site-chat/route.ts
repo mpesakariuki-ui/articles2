@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callCustomAI } from '@/lib/ai-config';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, posts } = await request.json();
-    
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const { message, posts, userId } = await request.json();
     
     const siteInfo = `Pillar Page is a modern article publishing platform featuring:
 - AI-powered reading assistance
@@ -37,8 +36,11 @@ If recommending posts, include their URLs in format: /posts/[id]
 
 Keep responses conversational and helpful.`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text().trim();
+    const responseText = await callCustomAI(prompt, userId, async () => {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim();
+    });
     
     // Extract URLs from response
     const urlMatches = responseText.match(/\/posts\/[a-zA-Z0-9]+/g) || [];
