@@ -14,12 +14,48 @@ function getServiceAccount() {
   }
   
   try {
-    // Decode base64 encoded service account
-    const decodedKey = Buffer.from(serviceAccountKey, 'base64').toString();
-    return JSON.parse(decodedKey);
+    let parsedKey;
+    
+    // First try to parse it directly in case it's a JSON string
+    try {
+      parsedKey = JSON.parse(serviceAccountKey);
+      if (isValidServiceAccount(parsedKey)) {
+        return parsedKey;
+      }
+    } catch (e) {
+      // Not a JSON string, continue to try base64
+    }
+    
+    // Try to decode as base64
+    try {
+      const decodedKey = Buffer.from(serviceAccountKey, 'base64').toString();
+      parsedKey = JSON.parse(decodedKey);
+      if (isValidServiceAccount(parsedKey)) {
+        return parsedKey;
+      }
+    } catch (e) {
+      // Not valid base64 or JSON
+    }
+    
+    throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format');
   } catch (error) {
+    console.error('Firebase Service Account Error:', error);
     throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format');
   }
+}
+
+// Helper function to validate service account object
+function isValidServiceAccount(obj: any): boolean {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.type === 'string' &&
+    obj.type === 'service_account' &&
+    typeof obj.project_id === 'string' &&
+    typeof obj.private_key_id === 'string' &&
+    typeof obj.private_key === 'string' &&
+    typeof obj.client_email === 'string'
+  );
 }
 
 // Function to initialize admin app
@@ -61,13 +97,6 @@ export function getAdminDb(): Firestore {
 }
 
 // End of file
-      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)),
-      projectId: 'last-35eb7'
-    });
-  }
-}
-
-// For backwards compatibility with existing code
 export const adminAuth = getAdminAuth();
 export const adminDb = getAdminDb();
 

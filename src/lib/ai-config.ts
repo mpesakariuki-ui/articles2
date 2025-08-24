@@ -37,12 +37,21 @@ export async function callCustomAI(
   fallbackFunction: () => Promise<any>
 ): Promise<any> {
   try {
+    // Always try fallback function first if available
+    if (fallbackFunction) {
+      try {
+        return await fallbackFunction();
+      } catch (fallbackError) {
+        console.log('Fallback function failed, trying custom AI:', fallbackError);
+      }
+    }
+    
     if (!userId) {
       // Use default DeepSeek config for unauthenticated users
       if (DEFAULT_AI_CONFIG.apiKey) {
         return await callDeepSeek(prompt, DEFAULT_AI_CONFIG);
       }
-      return 'AI feature unavailable - please sign in to use custom models.';
+      return 'AI feature unavailable - API key not configured.';
     }
     
     const userConfig = await getUserAIConfig(userId);
@@ -69,6 +78,14 @@ export async function callCustomAI(
     }
   } catch (error) {
     console.error('Custom AI call failed:', error);
+    // Final fallback to the provided function
+    if (fallbackFunction) {
+      try {
+        return await fallbackFunction();
+      } catch (finalError) {
+        console.error('Final fallback also failed:', finalError);
+      }
+    }
     return 'AI service temporarily unavailable.';
   }
 }

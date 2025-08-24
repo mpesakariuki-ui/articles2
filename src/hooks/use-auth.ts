@@ -21,10 +21,13 @@ export function useAuth() {
       
       if (user) {
         try {
-          // Initialize user collections when user signs in
+          const token = await user.getIdToken();
           await fetch('/api/user/init', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ userId: user.uid })
           });
         } catch (error) {
