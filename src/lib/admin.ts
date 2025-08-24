@@ -6,6 +6,34 @@ import { getFirestore, Firestore } from 'firebase-admin/firestore';
 let _adminAuth: Auth | null = null;
 let _adminDb: Firestore | null = null;
 
+// Function to decode and parse service account
+function getServiceAccount() {
+  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (!serviceAccountKey) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required');
+  }
+  
+  try {
+    // Decode base64 encoded service account
+    const decodedKey = Buffer.from(serviceAccountKey, 'base64').toString();
+    return JSON.parse(decodedKey);
+  } catch (error) {
+    throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY format');
+  }
+}
+
+// Function to initialize admin app
+function initializeAdminApp() {
+  const apps = getApps();
+  
+  if (!apps.length) {
+    const serviceAccount = getServiceAccount();
+    initializeApp({
+      credential: cert(serviceAccount)
+    });
+  }
+}
+
 // Function to get initialized auth instance
 export function getAdminAuth(): Auth {
   if (typeof window !== 'undefined') {
@@ -32,14 +60,7 @@ export function getAdminDb(): Firestore {
   return _adminDb;
 }
 
-// Helper to initialize the app if needed
-function initializeAdminApp() {
-  if (!getApps().length) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required');
-    }
-
-    initializeApp({
+// End of file
       credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)),
       projectId: 'last-35eb7'
     });
