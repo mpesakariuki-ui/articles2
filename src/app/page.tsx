@@ -83,9 +83,10 @@ export default function Home() {
       .then(res => res.json())
       .then(data => {
         const posts = Array.isArray(data.posts) ? data.posts : [];
-        console.log('Fetched posts:', posts); // Debug log
-        setAllPosts(posts);
-        setFilteredPosts(posts);
+        const sortedPosts = posts.sort((a, b) => (b.views || 0) - (a.views || 0));
+        console.log('Fetched posts:', sortedPosts); // Debug log
+        setAllPosts(sortedPosts);
+        setFilteredPosts(sortedPosts);
       })
       .catch((error) => {
         console.error('Error fetching posts:', error);
