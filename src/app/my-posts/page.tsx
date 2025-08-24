@@ -53,9 +53,7 @@ export default function MyPostsPage() {
       });
       
       if (response.ok) {
-        setMyPosts(posts => posts.map(post => 
-          post.id === postId ? { ...post, locked: !isLocked } : post
-        ));
+        // Post updated
         toast({ 
           title: isLocked ? 'Post unlocked' : 'Post locked', 
           description: isLocked ? 'Post is now public' : 'Post is now private' 
@@ -199,12 +197,12 @@ export default function MyPostsPage() {
                   <div className="flex items-center space-x-2">
                     <Switch
                       id={`lock-${post.id}`}
-                      checked={post.locked || false}
-                      onCheckedChange={() => togglePostLock(post.id, post.locked || false)}
+                      checked={false}
+                      onCheckedChange={() => togglePostLock(post.id, false)}
                     />
                     <Label htmlFor={`lock-${post.id}`} className="flex items-center gap-1">
-                      {post.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                      {post.locked ? 'Locked' : 'Public'}
+                      <Unlock className="h-4 w-4" />
+                      Public
                     </Label>
                   </div>
                 </div>

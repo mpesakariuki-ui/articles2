@@ -12,6 +12,12 @@ import { FileText, Save } from 'lucide-react';
 import { CoAuthorManager } from '@/components/research/co-author-manager';
 import { AISectionHelper } from '@/components/research/ai-section-helper';
 
+interface CoAuthor {
+  email: string;
+  name: string;
+  institution?: string;
+}
+
 export default function CreateResearchPage() {
   const [formData, setFormData] = useState({
     title: '',
@@ -25,7 +31,7 @@ export default function CreateResearchPage() {
     discussion: '',
     conclusion: '',
     references: '',
-    coAuthors: []
+    coAuthors: [] as CoAuthor[]
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();

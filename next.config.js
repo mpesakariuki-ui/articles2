@@ -19,6 +19,16 @@ const nextConfig = {
   experimental: {
     typedRoutes: false,
   },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+    };
+    config.externals = config.externals || [];
+    config.externals.push({
+      'firebase-functions': 'firebase-functions'
+    });
+    return config;
+  },
 }
 
 module.exports = nextConfig

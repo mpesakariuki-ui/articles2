@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return result.response.text().trim();
     });
     
-    const concepts = conceptsText.split(',').map(c => c.trim()).slice(0, 5);
+    const concepts = conceptsText.split(',').map((c: string) => c.trim()).slice(0, 5);
     
     return NextResponse.json({ concepts });
   } catch (error) {

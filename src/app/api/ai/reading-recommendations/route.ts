@@ -32,7 +32,7 @@ Return only the exact titles of the 3 recommended articles, one per line.`;
     const recommendedTitles = responseText.split('\n').slice(0, 3);
     
     const recommendations = otherPosts.filter(post => 
-      recommendedTitles.some(title => post.title.includes(title.replace('- ', '').trim()))
+      recommendedTitles.some((title: string) => post.title.includes(title.replace('- ', '').trim()))
     ).slice(0, 3);
     
     return NextResponse.json({ recommendations });

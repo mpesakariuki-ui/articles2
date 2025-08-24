@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return result.response.text().trim();
     });
     
-    const questions = questionsText.split('\n').filter(line => line.trim()).slice(0, 3);
+    const questions = questionsText.split('\n').filter((line: string) => line.trim()).slice(0, 3);
     
     return NextResponse.json({ questions });
   } catch (error) {

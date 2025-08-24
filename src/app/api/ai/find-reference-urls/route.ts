@@ -27,8 +27,8 @@ Return only the URLs, one per line. If no specific URLs can be determined, sugge
           
           const urls = responseText
             .split('\n')
-            .filter(line => line.trim())
-            .filter(line => line.includes('http') || line.includes('www'))
+            .filter((line: string) => line.trim())
+            .filter((line: string) => line.includes('http') || line.includes('www'))
             .slice(0, 3);
           
           return {

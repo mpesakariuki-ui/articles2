@@ -44,7 +44,7 @@ Keep responses conversational and helpful.`;
     
     // Extract URLs from response
     const urlMatches = responseText.match(/\/posts\/[a-zA-Z0-9]+/g) || [];
-    const urls = urlMatches.map(url => `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${url}`);
+    const urls = urlMatches.map((url: string) => `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${url}`);
     
     return NextResponse.json({ 
       response: responseText,

@@ -10,5 +10,5 @@ export default async function ResearchPaperPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  return <ResearchPaperView paper={paper} />;
+  return <ResearchPaperView paper={paper as any} />;
 }

@@ -34,7 +34,7 @@ export default function AdminAnalytics() {
           acc[post.category] = (acc[post.category] || 0) + 1;
           return acc;
         }, {} as Record<string, number>);
-        const topCategory = Object.entries(categoryCount).sort(([,a], [,b]) => b - a)[0]?.[0] || '';
+        const topCategory = Object.entries(categoryCount).sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || '';
         
         // Find most viewed post
         const mostViewed = postsData.reduce((max, post) => 

@@ -16,14 +16,14 @@ export async function POST(request: NextRequest) {
       // Simple text-based PDF simulation
       const headers = new Headers();
       headers.set('Content-Type', 'application/pdf');
-      headers.set('Content-Disposition', `attachment; filename="${paper.title}.pdf"`);
+      headers.set('Content-Disposition', `attachment; filename="${(paper as any).title || 'paper'}.pdf"`);
       
       return new NextResponse(content, { headers });
     } else if (format === 'docx') {
       // Simple text-based Word simulation
       const headers = new Headers();
       headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-      headers.set('Content-Disposition', `attachment; filename="${paper.title}.docx"`);
+      headers.set('Content-Disposition', `attachment; filename="${(paper as any).title || 'paper'}.docx"`);
       
       return new NextResponse(content, { headers });
     }

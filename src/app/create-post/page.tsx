@@ -233,9 +233,9 @@ export default function CreatePostPage() {
           coverImage: thumbnailUrl || 'https://placehold.co/800x400.png',
           status: 'draft',
           author: {
-            name: user.displayName || 'Anonymous',
-            email: user.email,
-            avatarUrl: user.photoURL || 'https://placehold.co/100x100.png'
+            name: user!.displayName || 'Anonymous',
+            email: user!.email || '',
+            avatarUrl: user!.photoURL || 'https://placehold.co/100x100.png'
           }
         })
       });
@@ -352,9 +352,9 @@ export default function CreatePostPage() {
           coverImage: thumbnailUrl || 'https://placehold.co/800x400.png',
           status: 'published',
           author: {
-            name: user.displayName || 'Anonymous',
-            email: user.email,
-            avatarUrl: user.photoURL || 'https://placehold.co/100x100.png'
+            name: user!.displayName || 'Anonymous',
+            email: user!.email || '',
+            avatarUrl: user!.photoURL || 'https://placehold.co/100x100.png'
           }
         })
       });

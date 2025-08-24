@@ -18,7 +18,7 @@ Return only the tags as a comma-separated list:`;
 
     const result = await model.generateContent(prompt);
     const tagsText = result.response.text().trim();
-    const tags = tagsText.split(',').map(tag => tag.trim());
+    const tags = tagsText.split(',').map((tag: string) => tag.trim());
     
     return NextResponse.json({ tags });
   } catch (error) {

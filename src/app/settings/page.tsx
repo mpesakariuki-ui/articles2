@@ -187,7 +187,6 @@ export default function SettingsPage() {
             notifications: settings.notifications,
             privacy: settings.privacy,
             preferences: settings.preferences,
-            aiModel: settings.aiModel,
             aiModel: settings.aiModel
           }
         })

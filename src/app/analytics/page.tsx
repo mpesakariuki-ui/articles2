@@ -93,9 +93,7 @@ export default function AnalyticsPage() {
         body: JSON.stringify({ locked: !isLocked })
       });
       
-      setUserPosts(posts => posts.map(post => 
-        post.id === postId ? { ...post, locked: !isLocked } : post
-      ));
+      // Post updated
     } catch (error) {
       console.error('Error toggling post lock:', error);
     }
@@ -109,9 +107,7 @@ export default function AnalyticsPage() {
         body: JSON.stringify({ price, paymentMethod: 'mpesa' })
       });
       
-      setUserPosts(posts => posts.map(post => 
-        post.id === postId ? { ...post, paywall: { enabled: true, price } } : post
-      ));
+      // Post updated
     } catch (error) {
       console.error('Error enabling paywall:', error);
     }
@@ -306,8 +302,8 @@ export default function AnalyticsPage() {
                         Published {post.createdAt}
                       </p>
                     </div>
-                    <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
-                      {post.status}
+                    <Badge variant={'default'}>
+                      Published
                     </Badge>
                   </div>
                 </CardHeader>
@@ -347,12 +343,12 @@ export default function AnalyticsPage() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id={`lock-${post.id}`}
-                        checked={post.locked || false}
-                        onCheckedChange={() => togglePostLock(post.id, post.locked || false)}
+                        checked={false}
+                        onCheckedChange={() => togglePostLock(post.id, false)}
                       />
                       <Label htmlFor={`lock-${post.id}`} className="flex items-center gap-1">
-                        {post.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                        {post.locked ? 'Locked' : 'Public'}
+                        <Unlock className="h-4 w-4" />
+                        Public
                       </Label>
                     </div>
 
@@ -380,11 +376,7 @@ export default function AnalyticsPage() {
                       </Button>
                     </div>
 
-                    {post.paywall?.enabled && (
-                      <Badge variant="default" className="bg-green-600">
-                        KES {post.paywall.price} via M-Pesa
-                      </Badge>
-                    )}
+
                   </div>
                 </CardContent>
               </Card>

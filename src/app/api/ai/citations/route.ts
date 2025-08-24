@@ -28,7 +28,7 @@ Make citations relevant to the topic and realistic.`;
     const citationText = result.response.text().trim();
     
     // Split citations by line breaks and filter out empty lines
-    const citations = citationText.split('\n').filter(line => line.trim().length > 0);
+    const citations = citationText.split('\n').filter((line: string) => line.trim().length > 0);
     
     return NextResponse.json({ citations });
   } catch (error) {

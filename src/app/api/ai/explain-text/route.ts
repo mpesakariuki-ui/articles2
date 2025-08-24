@@ -28,14 +28,14 @@ References: [list of URLs]`;
     });
     
     // Parse explanation and references
-    const explanationMatch = responseText.match(/Explanation:\s*(.*?)(?=References:|$)/s);
-    const referencesMatch = responseText.match(/References:\s*(.*)/s);
+    const explanationMatch = responseText.match(/Explanation:\s*([\s\S]*?)(?=References:|$)/);
+    const referencesMatch = responseText.match(/References:\s*([\s\S]*)/);
     
     const explanation = explanationMatch ? explanationMatch[1].trim() : responseText;
     const references = referencesMatch 
       ? referencesMatch[1].split('\n')
-          .filter(line => line.includes('http'))
-          .map(line => line.trim())
+          .filter((line: string) => line.includes('http'))
+          .map((line: string) => line.trim())
           .slice(0, 3)
       : [];
     
