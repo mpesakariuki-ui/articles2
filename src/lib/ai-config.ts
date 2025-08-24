@@ -32,7 +32,6 @@ export async function callCustomAI(
   try {
     // Try system DeepSeek API key first if available
     if (process.env.DEEPSEEK_API_KEY) {
-      console.log('Using system DeepSeek API key');
       try {
         return await callDeepSeek(prompt, {
           provider: 'deepseek',
@@ -41,24 +40,19 @@ export async function callCustomAI(
           enabled: true
         });
       } catch (error) {
-        console.log('System DeepSeek failed, trying user config:', error);
+        // Fall through to user config
       }
     }
     
     if (!userId) {
-      console.log('No userId provided, returning simple response');
       return 'AI feature unavailable - please sign in to use custom models.';
     }
     
     const aiConfig = await getUserAIConfig(userId);
-    console.log('AI Config:', aiConfig);
     
     if (!aiConfig || !aiConfig.enabled || !aiConfig.apiKey) {
-      console.log('No custom AI config, returning simple response');
       return 'AI feature unavailable - please configure your AI model in settings.';
     }
-
-    console.log(`Using custom AI: ${aiConfig.provider} - ${aiConfig.model}`);
     
     switch (aiConfig.provider) {
       case 'openai':
@@ -70,7 +64,6 @@ export async function callCustomAI(
       case 'deepseek':
         return await callDeepSeek(prompt, aiConfig);
       default:
-        console.log('Unknown provider, returning simple response');
         return 'Unsupported AI provider configured.';
     }
   } catch (error) {
@@ -136,8 +129,6 @@ async function callDeepSeek(prompt: string, config: AIModelConfig) {
     temperature: 0.7
   };
   
-  console.log('DeepSeek request:', { model: requestBody.model, apiKey: config.apiKey?.slice(0, 10) + '...' });
-  
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -148,8 +139,6 @@ async function callDeepSeek(prompt: string, config: AIModelConfig) {
   });
   
   const responseText = await response.text();
-  console.log('DeepSeek response status:', response.status);
-  console.log('DeepSeek response:', responseText.slice(0, 200));
   
   if (!response.ok) {
     throw new Error(`DeepSeek API error: ${response.status} - ${responseText}`);

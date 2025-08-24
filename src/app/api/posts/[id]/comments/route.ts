@@ -1,44 +1,81 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPost } from '@/lib/firestore';
+import { collection, addDoc, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params;
-    const post = await getPost(id);
     
-    if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ comments: post.comments || [] });
+    const commentsRef = collection(db, 'comments');
+    const q = query(
+      commentsRef,
+      where('postId', '==', id)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const comments = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        postId: data.postId,
+        text: data.text,
+        author: data.author || { name: 'Anonymous', avatarUrl: '' },
+        createdAt: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : new Date().toLocaleDateString()
+      };
+    });
+    
+    return NextResponse.json({ comments });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 });
+    console.error('Error fetching comments:', error);
+    return NextResponse.json({ comments: [] });
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params;
-    const { text } = await request.json();
+    const { text, userId, userName, userEmail, userAvatar } = await request.json();
     
-    const post = await getPost(id);
-    if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    if (!text?.trim()) {
+      return NextResponse.json({ error: 'Comment text is required' }, { status: 400 });
     }
-
-    const newComment = {
-      id: String(Date.now()),
-      text,
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'User authentication required' }, { status: 401 });
+    }
+    
+    const commentData = {
+      postId: id,
+      text: text.trim(),
       author: {
-        id: 'anonymous',
-        name: 'Anonymous User',
-        avatarUrl: 'https://placehold.co/100x100.png'
+        id: userId,
+        name: userName || 'Anonymous',
+        email: userEmail || '',
+        avatarUrl: userAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'Anonymous')}&background=random`
       },
-      createdAt: 'Just now'
+      createdAt: new Date().toISOString()
     };
-
-    return NextResponse.json({ success: true, comment: newComment });
+    
+    const docRef = await addDoc(collection(db, 'comments'), commentData);
+    
+    const comment = {
+      id: docRef.id,
+      ...commentData,
+      createdAt: new Date().toLocaleDateString()
+    };
+    
+    return NextResponse.json({ comment });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to add comment' }, { status: 500 });
+    console.error('Error posting comment:', error);
+    return NextResponse.json({ 
+      error: 'Failed to post comment', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

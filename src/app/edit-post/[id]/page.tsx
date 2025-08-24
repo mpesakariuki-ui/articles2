@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Edit, Save } from 'lucide-react';
 import type { Post } from '@/lib/types';
 
-export default function EditPostPage({ params }: { params: { id: string } }) {
+export default function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -31,12 +31,16 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
       router.push('/');
       return;
     }
-    fetchPost();
-  }, [user, params.id]);
+    const getParams = async () => {
+      const { id } = await params;
+      fetchPost(id);
+    };
+    getParams();
+  }, [user, params]);
 
-  const fetchPost = async () => {
+  const fetchPost = async (id: string) => {
     try {
-      const response = await fetch(`/api/posts/${params.id}`);
+      const response = await fetch(`/api/posts/${id}`);
       if (response.ok) {
         const postData = await response.json();
         setPost(postData);
@@ -65,7 +69,8 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/posts/${params.id}`, {
+      const { id } = await params;
+      const response = await fetch(`/api/posts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

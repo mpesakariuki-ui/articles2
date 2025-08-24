@@ -88,34 +88,36 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-background">
           <div className="container py-4 space-y-4">
-            <Link href="/categories" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full justify-start">
-                Categories
-              </Button>
+            <Link href="/categories" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium">
+              Categories
             </Link>
-            <Link href="/community" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full justify-start">
-                Community
-              </Button>
+            <Link href="/community" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium">
+              Community
             </Link>
-            <Link href="/research" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full justify-start">
-                Research
-              </Button>
+            <Link href="/research" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium">
+              Research
             </Link>
-            <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full justify-start">
-                About
-              </Button>
+            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium">
+              About
             </Link>
 
             {user ? (
               <div className="space-y-2">
-                <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    Profile
-                  </Button>
+                <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-2 text-sm font-medium">
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  Profile
+                </Link>
+                <Link href="/my-posts" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-2 text-sm font-medium">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  My Posts
+                </Link>
+                <Link href="/analytics" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-2 text-sm font-medium">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Analytics
+                </Link>
+                <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-2 text-sm font-medium">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
                 </Link>
                 <Button variant="ghost" className="w-full justify-start" onClick={() => { logout(); setMobileMenuOpen(false); }}>
                   <LogOut className="mr-2 h-4 w-4" />

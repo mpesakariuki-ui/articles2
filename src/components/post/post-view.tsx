@@ -50,6 +50,7 @@ import { pageview, event } from '@/lib/analytics';
 export function PostView({ post }: { post: Post }) {
   const [showReferencesModal, setShowReferencesModal] = useState(false);
   const [hideMetadata, setHideMetadata] = useState(false);
+  const [showMobileAI, setShowMobileAI] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -107,19 +108,32 @@ export function PostView({ post }: { post: Post }) {
   const isLongPost = post.content.split(' ').length > 150;
 
   return (
-    <div className="relative flex">
-      <AISidebar articleContent={post.content} articleTitle={post.title} />
-      <article className="flex-1 mx-auto max-w-4xl py-4 md:py-8 lg:py-12 px-4">
+    <div className="relative">
+      <AISidebar 
+        articleContent={post.content} 
+        articleTitle={post.title} 
+        showMobile={showMobileAI}
+        onCloseMobile={() => setShowMobileAI(false)}
+      />
+      
+
+      
+      <article className="mx-auto max-w-4xl py-4 md:py-8 lg:py-12 px-4 md:ml-80">
       <div className="space-y-4 text-center mb-12">
         <Badge variant="outline">{post.category}</Badge>
         <h1 className="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold tracking-tighter px-2">
           {post.title}
         </h1>
-        <div className={`flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-muted-foreground transition-opacity duration-300 ${hideMetadata ? 'opacity-0' : 'opacity-100'}`}>
-           <div className="flex items-center space-x-2">
+        <div className={`flex flex-col items-center justify-center gap-3 text-muted-foreground transition-opacity duration-300 ${hideMetadata ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="flex items-center space-x-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={post.author.avatarUrl} data-ai-hint="author portrait" />
-              <AvatarFallback>{authorInitials}</AvatarFallback>
+              <AvatarImage 
+                src={post.author.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.name)}&background=random`} 
+                data-ai-hint="author portrait" 
+              />
+              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                {authorInitials}
+              </AvatarFallback>
             </Avatar>
             <div className="flex items-center gap-1">
               <span className="font-medium">{post.author.name}</span>
@@ -128,18 +142,31 @@ export function PostView({ post }: { post: Post }) {
               )}
             </div>
           </div>
-          <div className="hidden sm:block">•</div>
-          <time dateTime={post.createdAt}>{post.createdAt}</time>
-          <div className="hidden sm:block">•</div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>{calculateReadingTime(post.content)}</span>
-          </div>
-          <div className="hidden sm:block">•</div>
-          <div className="flex items-center gap-1">
-            <Eye className="h-4 w-4" />
-            <span>{post.views || 0} views</span>
-          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 md:hidden animate-pulse bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 hover:from-purple-500 hover:to-blue-500"
+            onClick={() => setShowMobileAI(true)}
+          >
+            <Sparkles className="h-4 w-4 animate-spin" />
+            AI Features
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden md:flex items-center gap-2 animate-pulse bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 hover:from-purple-500 hover:to-blue-500"
+            onClick={() => {
+              const expandButton = document.querySelector('[data-ai-expand]');
+              if (expandButton) {
+                expandButton.click();
+              }
+            }}
+          >
+            <Sparkles className="h-4 w-4 animate-spin" />
+            AI Features
+          </Button>
         </div>
         <div className="flex justify-center gap-4 mt-4">
           <SocialShare title={post.title} url={typeof window !== 'undefined' ? `${window.location.origin}/posts/${post.id}` : `/posts/${post.id}`} />
@@ -285,12 +312,18 @@ export function PostView({ post }: { post: Post }) {
         </section>
       )}
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Rate this post:</span>
-          <PostRating postId={post.id} />
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-lg p-6 mb-8 border border-amber-200 dark:border-amber-800">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center md:items-start">
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">Rate This Article</h3>
+            <p className="text-sm text-muted-foreground mb-3 text-center md:text-left">Help others discover great content by sharing your rating</p>
+            <PostRating postId={post.id} />
+          </div>
+          <div className="flex flex-col items-center">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-2">Connect with the author</p>
+            <FollowAuthor authorId={post.author.id} authorName={post.author.name} />
+          </div>
         </div>
-        <FollowAuthor authorId={post.author.id} authorName={post.author.name} />
       </div>
       
       <RelatedPosts currentPost={post} />

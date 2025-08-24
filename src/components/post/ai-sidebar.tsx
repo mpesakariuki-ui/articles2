@@ -12,9 +12,11 @@ import { MessageSquare, HelpCircle, Lightbulb, BookOpen, Sparkles, ChevronLeft, 
 interface AISidebarProps {
   articleContent: string;
   articleTitle: string;
+  showMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
-export function AISidebar({ articleContent, articleTitle }: AISidebarProps) {
+export function AISidebar({ articleContent, articleTitle, showMobile = false, onCloseMobile }: AISidebarProps) {
   const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [question, setQuestion] = useState('');
@@ -175,19 +177,22 @@ export function AISidebar({ articleContent, articleTitle }: AISidebarProps) {
   };
 
   return (
-    <div className={`absolute left-0 top-0 h-full bg-background border-r transition-all duration-300 z-40 ${
+    <>
+    {/* Desktop Sidebar */}
+    <div className={`fixed left-0 top-0 h-full bg-background transition-all duration-300 z-40 hidden md:block ${
       isCollapsed ? 'w-12' : 'w-80'
-    }`}>
+    } ${isCollapsed ? '' : 'border-r'}`}>
       {/* Collapse/Expand Button */}
       <Button
         variant="ghost"
         size="sm"
-        className="absolute -right-3 top-20 z-50 h-8 w-8 rounded-full border bg-background shadow-md"
+        className="absolute -right-3 top-20 z-50 h-8 w-8 rounded-full border bg-background shadow-md md:block"
         onClick={() => setIsCollapsed(!isCollapsed)}
+        data-ai-expand
       >
         {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </Button>
-
+      
       {/* Sidebar Content */}
       <div className={`h-screen overflow-y-auto p-4 sticky top-0 ${isCollapsed ? 'hidden' : 'block'}`}>
         <div className="mb-4">
@@ -432,5 +437,263 @@ export function AISidebar({ articleContent, articleTitle }: AISidebarProps) {
         </div>
       </div>
     </div>
+    
+
+    
+    {/* Mobile Sidebar Overlay */}
+    {showMobile && (
+      <div className="fixed inset-0 bg-background z-40 md:hidden overflow-y-auto" data-ai-sidebar>
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4" />
+              AI Features
+            </h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCloseMobile}
+            >
+              ✕
+            </Button>
+          </div>
+          
+          <div className="space-y-4">
+            {/* AI Summary */}
+            <Card className="text-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <BookOpen className="h-3 w-3" />
+                  Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={generateSummary} 
+                  disabled={loadingSummary}
+                  className="w-full text-xs h-7"
+                >
+                  {loadingSummary ? 'Generating...' : 'Generate'}
+                </Button>
+                {loadingSummary && (
+                  <div className="space-y-1">
+                    <Skeleton className="h-2 w-full" />
+                    <Skeleton className="h-2 w-4/5" />
+                  </div>
+                )}
+                {summary && (
+                  <div className="p-2 bg-muted rounded text-xs max-h-20 overflow-y-auto">
+                    {summary}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Ask Questions */}
+            <Card className="text-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <HelpCircle className="h-3 w-3" />
+                  Ask Question
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Input
+                  placeholder="Ask about this article..."
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && askQuestion()}
+                  className="text-xs h-7"
+                />
+                <Button 
+                  onClick={askQuestion} 
+                  disabled={loading}
+                  size="sm"
+                  className="w-full text-xs h-7"
+                >
+                  Ask
+                </Button>
+                {response && (
+                  <div className="p-2 bg-muted rounded text-xs max-h-20 overflow-y-auto">
+                    {response}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Key Concepts */}
+            <Card className="text-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <MessageSquare className="h-3 w-3" />
+                  Concepts
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={extractConcepts} 
+                  disabled={loading}
+                  className="w-full text-xs h-7"
+                >
+                  Find Concepts
+                </Button>
+                <div className="flex flex-wrap gap-1">
+                  {concepts.map((concept, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="secondary" 
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs px-1 py-0"
+                      onClick={() => explainConcept(concept)}
+                    >
+                      {concept}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Discussion Starters */}
+            <Card className="text-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Lightbulb className="h-3 w-3" />
+                  Discussions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={generateDiscussions} 
+                  disabled={loading}
+                  className="w-full text-xs h-7"
+                >
+                  Generate Topics
+                </Button>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {discussions.map((discussion, index) => (
+                    <div key={index} className="p-2 border rounded text-xs">
+                      {discussion}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Smart Bookmarks */}
+            <Card className="text-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Bookmark className="h-3 w-3" />
+                  Bookmarks
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={identifyKeyPassages} 
+                  disabled={loading}
+                  className="w-full text-xs h-7"
+                >
+                  Find Key Passages
+                </Button>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {keyPassages.map((passage, index) => (
+                    <div key={index} className="p-2 border rounded text-xs">
+                      <div className="flex items-center justify-between mb-1">
+                        <Badge variant="secondary" className="text-xs px-1 py-0">{passage.importance}</Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => navigator.clipboard.writeText(passage.text)}
+                          className="h-4 w-4 p-0"
+                        >
+                          <Copy className="h-2 w-2" />
+                        </Button>
+                      </div>
+                      <p className="text-xs italic mb-1">"{passage.text?.slice(0, 50)}..."</p>
+                      <p className="text-xs text-muted-foreground">{passage.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Personal Glossary */}
+            <Card className="text-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <BookOpen className="h-3 w-3" />
+                  Glossary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={buildGlossary} 
+                  disabled={loading}
+                  className="w-full text-xs h-7"
+                >
+                  Build Glossary
+                </Button>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {glossaryTerms.map((term, index) => (
+                    <div key={index} className="p-2 border rounded text-xs">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-xs">{term.term}</span>
+                        <Badge 
+                          variant={term.difficulty === 'Basic' ? 'secondary' : term.difficulty === 'Intermediate' ? 'default' : 'destructive'}
+                          className="text-xs px-1 py-0"
+                        >
+                          {term.difficulty}
+                        </Badge>
+                      </div>
+                      <p className="text-xs mb-1">{term.definition}</p>
+                      <p className="text-xs text-muted-foreground italic">{term.context}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reading Recommendations */}
+            <Card className="text-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Target className="h-3 w-3" />
+                  Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={generateRecommendations} 
+                  disabled={loading}
+                  className="w-full text-xs h-7"
+                >
+                  Get Recommendations
+                </Button>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {recommendations.map((rec, index) => (
+                    <div key={index} className="p-2 border rounded text-xs">
+                      <p className="font-semibold text-xs mb-1">{rec.title}</p>
+                      <p className="text-xs text-muted-foreground">{rec.excerpt?.slice(0, 60)}...</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
