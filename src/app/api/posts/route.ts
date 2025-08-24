@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addPost, getPosts } from '@/lib/firestore';
 import { dataCache } from '@/lib/cache';
-import type { Book, Lecture, Post } from '@/lib/types';
+import type { Book, Lecture, Post, User } from '@/lib/types';
 
 interface CreatePostBody {
   title: string;
@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
       author: {
         id: 'kariuki-james',
         name: 'Kariuki James',
-        avatarUrl: 'https://placehold.co/100x100.png'
+        avatarUrl: 'https://placehold.co/100x100.png',
+        email: 'kariuki@example.com'
       },
       createdAt: new Date().toISOString(),
       comments: [],

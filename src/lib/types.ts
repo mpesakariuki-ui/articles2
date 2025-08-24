@@ -2,6 +2,7 @@ export interface User {
   id: string;
   name: string;
   avatarUrl: string;
+  email: string;  // Required for proper user identification
 }
 
 export interface Comment {
@@ -41,4 +42,27 @@ export interface Post {
   lectures: Lecture[];
   references?: string[];
   views?: number;
+}
+
+export interface ResearchPaper {
+  id: string;
+  title: string;
+  author: User;
+  createdAt: string;
+  content: string;
+  abstract: string;
+  authorId?: string;
+  authors: string[];
+  institution: string;
+  keywords: string[];
+  introduction: string;
+  methodology: string;
+  results: string;
+  discussion: string;
+  conclusion: string;
+  references: string;
+  views?: number;
+  citations?: number;
+  downloads?: number;
+  doi?: string;
 }

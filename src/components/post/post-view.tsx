@@ -138,7 +138,7 @@ export function PostView({ post }: { post: Post }) {
             <div className="flex items-center gap-1">
               <span className="font-medium">{post.author.name}</span>
               {checkAdminAccess(post.author.email || 'jamexkarix583@gmail.com') && (
-                <Shield className="h-4 w-4 text-primary" title="Admin" />
+                <Shield className="h-4 w-4 text-primary" aria-label="Admin" />
               )}
             </div>
           </div>
@@ -158,7 +158,7 @@ export function PostView({ post }: { post: Post }) {
             size="sm"
             className="hidden md:flex items-center gap-2 animate-pulse bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 hover:from-purple-500 hover:to-blue-500"
             onClick={() => {
-              const expandButton = document.querySelector('[data-ai-expand]');
+              const expandButton = document.querySelector('[data-ai-expand]') as HTMLElement;
               if (expandButton) {
                 expandButton.click();
               }

@@ -17,7 +17,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Post } from './types';
+import type { Post, User } from './types';
 import { dataCache } from './cache';
 
 // Type assertion for Firestore database
@@ -253,7 +253,7 @@ export const getComments = async (postId: string) => {
   }
 };
 
-export const addComment = async (postId: string, commentData: { text: string; author: { id: string; name: string; avatarUrl: string } }) => {
+export const addComment = async (postId: string, commentData: { text: string; author: User }) => {
   try {
     const postRef = doc(database, 'posts', postId);
     const comment = {
@@ -273,17 +273,19 @@ export const addComment = async (postId: string, commentData: { text: string; au
       const postData = postDoc.data();
       const postAuthorEmail = postData.author?.email;
       
-      if (postAuthorEmail && postAuthorEmail !== commentData.author.email) {
+      // Only create notification if both users have email
+      const authorEmail = commentData.author.email;
+      if (postAuthorEmail && authorEmail && postAuthorEmail !== authorEmail) {
         try {
           await fetch('/api/notifications', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              userId: postAuthorEmail, // Using email as userId for now
+              userId: postAuthorEmail,
               type: 'comment',
               message: `${commentData.author.name} commented on your post "${postData.title}"`,
               postId: postId,
-              fromUserId: commentData.author.email
+              fromUserId: authorEmail
             })
           });
         } catch (error) {

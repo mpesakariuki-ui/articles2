@@ -1,9 +1,9 @@
 import type { User, Post, Comment, Book, Lecture } from './types';
 
 export const users: User[] = [
-  { id: 'user-1', name: 'Dr. Evelyn Reed', avatarUrl: 'https://placehold.co/100x100.png' },
-  { id: 'user-2', name: 'Marcus Grant', avatarUrl: 'https://placehold.co/100x100.png' },
-  { id: 'user-3', name: 'Clara Foster', avatarUrl: 'https://placehold.co/100x100.png' },
+  { id: 'user-1', name: 'Dr. Evelyn Reed', avatarUrl: 'https://placehold.co/100x100.png', email: 'evelyn@example.com' },
+  { id: 'user-2', name: 'Marcus Grant', avatarUrl: 'https://placehold.co/100x100.png', email: 'marcus@example.com' },
+  { id: 'user-3', name: 'Clara Foster', avatarUrl: 'https://placehold.co/100x100.png', email: 'clara@example.com' },
 ];
 
 export const comments: Comment[] = [

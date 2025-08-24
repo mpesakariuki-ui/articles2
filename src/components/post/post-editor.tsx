@@ -19,6 +19,9 @@ export function PostEditor() {
   const [bookRecs, setBookRecs] = useState('');
   const [lectures, setLectures] = useState('');
   const [references, setReferences] = useState('');
+  const [title, setTitle] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [tags, setTags] = useState('');
   const { toast } = useToast();
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);

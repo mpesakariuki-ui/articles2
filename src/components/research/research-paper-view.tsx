@@ -14,26 +14,9 @@ import { VersionControl } from './version-control';
 import { PlagiarismChecker } from './plagiarism-checker';
 import { ReferenceValidator } from './reference-validator';
 
-interface ResearchPaper {
-  id: string;
-  title: string;
-  abstract: string;
-  authors: string[];
-  institution: string;
-  keywords: string[];
-  introduction: string;
-  methodology: string;
-  results: string;
-  discussion: string;
-  conclusion: string;
-  references: string;
-  createdAt: string;
-  citations: number;
-  downloads: number;
-  authorId?: string;
-}
+import { ResearchPaper as ResearchPaperType } from '@/lib/types';
 
-export function ResearchPaperView({ paper }: { paper: ResearchPaper }) {
+export function ResearchPaperView({ paper }: { paper: ResearchPaperType }) {
   const [showExport, setShowExport] = useState(false);
   const [showCitation, setShowCitation] = useState(false);
   const [showReview, setShowReview] = useState(false);
